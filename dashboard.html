@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard Bos - Shaka Laundry</title>
-<style>*{box-sizing:border-box;font-family:system-ui}body{background:#0f172a;color:#fff;padding:16px;padding-bottom:90px;max-width:600px;margin:auto}input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:12px;border:none;font-size:15px}input,select{background:#1e293b;color:#fff}button{background:#22c55e;font-weight:bold;color:#fff}.card{background:#1e293b;padding:16px;border-radius:16px;margin:12px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #334155}.badge{background:#064e3b;color:#34d399;padding:4px 10px;border-radius:20px;font-size:12px}.badgeKirim{background:#854d0e;color:#fbbf24;padding:4px 10px;border-radius:20px;font-size:12px}.bottom{position:fixed;bottom:0;left:0;right:0;background:#1e293b;display:flex;justify-content:space-around;padding:10px 0}.bottom div{text-align:center;font-size:11px;color:#94a3b8;cursor:pointer}.bottom div.active{color:#22c55e}.bottom span{font-size:22px;display:block}.page{display:none}.page.active{display:block}.bar{background:#0f172a;height:12px;border-radius:10px;overflow:hidden}.bar>div{background:#22c55e;height:100%}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:13px}.cal div{padding:10px 0;border-radius:10px;background:#0f172a}.cal div.has{background:#854d0e;border:1px solid #eab308}.btnSmall{width:auto;padding:8px 14px;font-size:13px;margin-right:6px}.btnEdit{background:#f59e0b}.btnDel{background:#ef4444}</style>
+<style>*{box-sizing:border-box;font-family:system-ui}body{background:#0f172a;color:#fff;padding:16px;padding-bottom:90px;max-width:600px;margin:auto}input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:12px;border:none;font-size:15px}input,select{background:#1e293b;color:#fff}button{background:#22c55e;font-weight:bold;color:#fff}.card{background:#1e293b;padding:16px;border-radius:16px;margin:12px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #334155;gap:8px}.badge{background:#064e3b;color:#34d399;padding:4px 10px;border-radius:20px;font-size:12px;white-space:nowrap}.badgeKirim{background:#854d0e;color:#fbbf24;padding:4px 10px;border-radius:20px;font-size:12px;white-space:nowrap}.bottom{position:fixed;bottom:0;left:0;right:0;background:#1e293b;display:flex;justify-content:space-around;padding:10px 0}.bottom div{text-align:center;font-size:11px;color:#94a3b8;cursor:pointer}.bottom div.active{color:#22c55e}.bottom span{font-size:22px;display:block}.page{display:none}.page.active{display:block}.bar{background:#0f172a;height:12px;border-radius:10px;overflow:hidden}.bar>div{background:#22c55e;height:100%}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:13px}.cal div{padding:10px 0;border-radius:10px;background:#0f172a}.cal div.has{background:#854d0e;border:1px solid #eab308}.btnSmall{width:auto;padding:8px 14px;font-size:13px;margin-right:6px}.btnEdit{background:#f59e0b}.btnDel{background:#ef4444}</style>
 </head><body>
-<div id="login"><h1 style="text-align:center">🧺 Dashboard Bos<br><small style="color:#94a3b8">Shaka Laundry</small></h1><div class="card"><p>PIN Bos (6 Angka)</p><input id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="******"><button onclick="loginBos()">Masuk</button><p id="err" style="color:#f87171"></p><p style="color:#94a3b8;font-size:13px">PIN default: 123456</p></div></div>
+<div id="debug" style="background:#7f1d1d;padding:10px;border-radius:12px;display:none;font-size:13px"></div>
+<div id="login"><h1 style="text-align:center">🧺 Dashboard Bos<br><small style="color:#94a3b8">Shaka Laundry</small></h1><div class="card"><p>PIN Bos (6 Angka)</p><input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="******"><button onclick="loginBos()">Masuk</button><p id="err" style="color:#f87171"></p><p style="color:#94a3b8;font-size:13px">PIN default: 123456<br><span id="statusKoneksi" style="color:#fbbf24">⏳ Menghubungkan ke Firebase...</span></p></div></div>
 <div id="app" style="display:none">
 <div style="display:flex;justify-content:space-between"><b>🧺 Shaka Laundry</b><span id="tglNow"></span></div>
 <a href="kurir.html" style="display:block;background:#10b981;color:#fff;text-align:center;padding:12px;margin:12px 0;border-radius:12px;text-decoration:none;font-weight:bold">🏍️ Buka App Kurir</a>
@@ -11,7 +12,7 @@
 <div id="p-beranda" class="page active"><h2>Ringkasan</h2>
 <div class="grid"><div class="card"><b id="omset" style="font-size:20px">Rp 0</b><br><small>Total Omset</small></div><div class="card"><b id="pelanggan">0</b><br><small>Pelanggan</small></div><div class="card"><b id="hariIni">0</b><br><small>Order Hari Ini</small></div><div class="card"><b id="totalKilo">0 kg</b><br><small>Total Kilo</small></div><div class="card"><b id="kirimHariIni">0</b><br><small>🚚 Kirim Hari Ini</small></div><div class="card"><b id="selesai">0</b><br><small>Selesai</small></div></div>
 <div class="card"><b>🚚 Harus Dikirim Hari Ini</b><div id="listKirim"></div></div>
-<div class="card"><b>📋 Order Terbaru - Bos Bisa Edit / Hapus</b><div id="listTerbaru"></div></div>
+<div class="card"><b>📋 Order Terbaru - Bos Bisa Hapus</b><div id="listTerbaru"></div></div>
 <div class="card"><b>⚙️ Setting Password Bos</b><input id="newPinBos" placeholder="PIN Bos Baru 6 angka" maxlength="6"><button onclick="simpanPinBos()" style="background:#7c3aed">💾 Simpan PIN Bos</button><p id="pinMsg" style="color:#4ade80"></p></div>
 </div>
 
@@ -19,8 +20,7 @@
 <div id="p-pelanggan" class="page"><h2>Data Pelanggan</h2><input id="cari" placeholder="🔍 Cari nama / HP" oninput="render()"><div id="listPelanggan"></div></div>
 <div id="p-kalender" class="page"><h2>Kalender Pengiriman</h2><div class="card"><b id="bulanLabel"></b><div class="cal" id="kalender"></div></div><div class="card"><b>Jadwal Pengiriman</b><div id="jadwalKirim"></div></div></div>
 
-<!-- CRUD PRODUK -->
-<div id="p-produk" class="page"><h2>Produk & Layanan - CRUD</h2>
+<div id="p-produk" class="page"><h2>Produk & Layanan - CRUD (Hanya Bos)</h2>
 <div class="card"><b id="produkFormTitle">➕ Tambah Produk Baru</b>
 <input id="pNama" placeholder="Nama Produk Contoh: Cuci Boneka">
 <input id="pHarga" type="number" placeholder="Harga per Kg Contoh: 12000">
@@ -30,15 +30,14 @@
 </div>
 <div id="listProduk"></div></div>
 
-<!-- CRUD KURIR -->
-<div id="p-kurir" class="page"><h2>🏍️ Data Kurir - CRUD</h2>
+<div id="p-kurir" class="page"><h2>🏍️ Data Kurir - CRUD (Hanya Bos)</h2>
 <div class="card"><b id="kurirFormTitle">➕ Tambah Kurir Baru</b>
 <input id="kNama" placeholder="Nama Kurir Contoh: Andi">
 <input id="kHp" placeholder="No HP Kurir">
 <input id="kPin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN Kurir 4 Angka Contoh: 1234">
 <button onclick="simpanKurir()" id="btnKurir">💾 Simpan Kurir</button>
 <button onclick="batalKurir()" id="btnBatalKurir" style="background:#475569;display:none">Batal Edit</button>
-<p style="color:#94a3b8;font-size:13px">Kurir login dengan: Pilih Nama -> Masukkan PIN ini. PIN ini hanya Bos yang bisa ubah.</p>
+<p style="color:#94a3b8;font-size:13px">Kurir login: Pilih Nama -> Masukkan PIN ini. Hanya Bos bisa ubah.</p>
 </div>
 <div id="listKurir"></div></div>
 
@@ -46,66 +45,83 @@
 </div>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getFirestore,collection,onSnapshot,query,orderBy,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,onSnapshot,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+function showErr(msg){let d=document.getElementById('debug');d.style.display='block';d.innerText="ERROR: "+msg;}
+window.addEventListener('error',e=>{showErr(e.message||"Script error");});
 const firebaseConfig={apiKey:"AIzaSyAihBZqdi4Cn5LbYagXDrffa4a6ysgVJn4",authDomain:"shaka-laundry.firebaseapp.com",projectId:"shaka-laundry",storageBucket:"shaka-laundry.firebasestorage.app",messagingSenderId:"228092735547",appId:"1:228092735547:web:6fa73a5c43dc654cfd2c1e",measurementId:"G-NNRWFP11RB"};
-const app=initializeApp(firebaseConfig);const db=getFirestore(app);
+let db;
+try{
+  const app=initializeApp(firebaseConfig);db=getFirestore(app);
+}catch(e){showErr("Firebase gagal: "+e.message);}
 let orders=[],produk=[],kurirList=[],pinBos="123456",editProdukId=null,editKurirId=null;
-window.show=(p,el)=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('p-'+p).classList.add('active');document.querySelectorAll('.bottom div').forEach(x=>x.classList.remove('active'));el.classList.add('active');};
-window.loginBos=async()=>{try{let s=await getDoc(doc(db,"settings","config"));if(s.exists()&&s.data().dashboardPin)pinBos=String(s.data().dashboardPin);}catch(e){}if(pin.value===pinBos){login.style.display='none';app.style.display='block';tglNow.innerText=new Date().toLocaleDateString('id-ID');}else err.innerText="PIN Salah!";};
-window.simpanPinBos=async()=>{let b=newPinBos.value;if(b.length!==6) return alert("PIN Bos harus 6 angka!");await setDoc(doc(db,"settings","config"),{dashboardPin:b},{merge:true});pinMsg.innerText="✅ PIN Bos berhasil diubah!";};
-// --- CRUD PRODUK ---
+window.show=(p,el)=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('p-'+p).classList.add('active');document.querySelectorAll('.bottom div').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');};
+window.loginBos=async()=>{
+  let val=document.getElementById('pinInput').value;
+  try{let s=await getDoc(doc(db,"settings","config"));if(s.exists()&&s.data().dashboardPin)pinBos=String(s.data().dashboardPin);}catch(e){showErr("Gagal cek PIN: "+e.message+" - Cek Firestore Rules harus Allow read/write");}
+  if(val===pinBos){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';document.getElementById('tglNow').innerText=new Date().toLocaleDateString('id-ID');}
+  else document.getElementById('err').innerText="PIN Salah! PIN yang benar: "+pinBos+" (kalau belum diubah)";
+};
+window.simpanPinBos=async()=>{let b=document.getElementById('newPinBos').value;if(b.length!==6) return alert("PIN Bos harus 6 angka!");try{await setDoc(doc(db,"settings","config"),{dashboardPin:b},{merge:true});document.getElementById('pinMsg').innerText="✅ PIN Bos berhasil diubah!";}catch(e){alert("Gagal simpan: "+e.message);}};
 window.simpanProduk=async()=>{
-  let n=pNama.value,h=parseInt(pHarga.value),d=pDesc.value;
+  let n=document.getElementById('pNama').value,h=parseInt(document.getElementById('pHarga').value),d=document.getElementById('pDesc').value;
   if(!n||!h) return alert("Isi Nama & Harga!");
-  if(editProdukId){await updateDoc(doc(db,"products",editProdukId),{nama:n,harga:h,desc:d});batalProduk();alert("Produk di-update! Langsung muncul di App Kurir!");}
-  else {await addDoc(collection(db,"products"),{nama:n,harga:h,desc:d});pNama.value="";pHarga.value="";pDesc.value="";alert("Produk ditambah!");}
+  try{
+    if(editProdukId){await updateDoc(doc(db,"products",editProdukId),{nama:n,harga:h,desc:d});batalProduk();alert("Produk di-update!");}
+    else {await addDoc(collection(db,"products"),{nama:n,harga:h,desc:d});document.getElementById('pNama').value="";document.getElementById('pHarga').value="";document.getElementById('pDesc').value="";alert("Produk ditambah!");}
+  }catch(e){alert("Gagal: "+e.message);}
 };
-window.editProduk=(id)=>{let p=produk.find(x=>x.id===id);if(!p)return;editProdukId=id;produkFormTitle.innerText="✏️ Edit Produk: "+p.nama;pNama.value=p.nama;pHarga.value=p.harga;pDesc.value=p.desc||"";btnProduk.innerText="💾 Update Produk";btnBatalProduk.style.display='block';window.scrollTo(0,0);};
-window.batalProduk=()=>{editProdukId=null;produkFormTitle.innerText="➕ Tambah Produk Baru";pNama.value="";pHarga.value="";pDesc.value="";btnProduk.innerText="💾 Simpan Produk";btnBatalProduk.style.display='none';};
-window.hapusProduk=async(id)=>{if(confirm("Hapus produk ini? Kurir tidak akan bisa pilih lagi.")) await deleteDoc(doc(db,"products",id));};
-// --- CRUD KURIR ---
+window.editProduk=(id)=>{let p=produk.find(x=>x.id===id);if(!p)return;editProdukId=id;document.getElementById('produkFormTitle').innerText="✏️ Edit Produk: "+p.nama;document.getElementById('pNama').value=p.nama;document.getElementById('pHarga').value=p.harga;document.getElementById('pDesc').value=p.desc||"";document.getElementById('btnProduk').innerText="💾 Update Produk";document.getElementById('btnBatalProduk').style.display='block';window.scrollTo(0,0);};
+window.batalProduk=()=>{editProdukId=null;document.getElementById('produkFormTitle').innerText="➕ Tambah Produk Baru";document.getElementById('pNama').value="";document.getElementById('pHarga').value="";document.getElementById('pDesc').value="";document.getElementById('btnProduk').innerText="💾 Simpan Produk";document.getElementById('btnBatalProduk').style.display='none';};
+window.hapusProduk=async(id)=>{if(confirm("Hapus produk ini?")){try{await deleteDoc(doc(db,"products",id));}catch(e){alert(e.message);}}};
 window.simpanKurir=async()=>{
-  let n=kNama.value,h=kHp.value,p=kPin.value;
+  let n=document.getElementById('kNama').value,h=document.getElementById('kHp').value,p=document.getElementById('kPin').value;
   if(!n||p.length!==4) return alert("Isi Nama & PIN 4 angka!");
-  if(editKurirId){await updateDoc(doc(db,"couriers",editKurirId),{nama:n,hp:h,pin:p});batalKurir();alert("Data Kurir di-update!");}
-  else {await addDoc(collection(db,"couriers"),{nama:n,hp:h,pin:p});kNama.value="";kHp.value="";kPin.value="";alert("Kurir ditambah! Kurir bisa login pilih nama + PIN ini.");}
+  try{
+    if(editKurirId){await updateDoc(doc(db,"couriers",editKurirId),{nama:n,hp:h,pin:p});batalKurir();alert("Data Kurir di-update!");}
+    else {await addDoc(collection(db,"couriers"),{nama:n,hp:h,pin:p});document.getElementById('kNama').value="";document.getElementById('kHp').value="";document.getElementById('kPin').value="";alert("Kurir ditambah!");}
+  }catch(e){alert("Gagal: "+e.message);}
 };
-window.editKurir=(id)=>{let k=kurirList.find(x=>x.id===id);if(!k)return;editKurirId=id;kurirFormTitle.innerText="✏️ Edit Kurir: "+k.nama;kNama.value=k.nama;kHp.value=k.hp||"";kPin.value=k.pin||"";btnKurir.innerText="💾 Update Kurir";btnBatalKurir.style.display='block';window.scrollTo(0,0);};
-window.batalKurir=()=>{editKurirId=null;kurirFormTitle.innerText="➕ Tambah Kurir Baru";kNama.value="";kHp.value="";kPin.value="";btnKurir.innerText="💾 Simpan Kurir";btnBatalKurir.style.display='none';};
-window.hapusKurir=async(id)=>{if(confirm("Hapus kurir ini?")) await deleteDoc(doc(db,"couriers",id));};
-window.hapusOrder=async(id)=>{if(confirm("Hapus order ini?")) await deleteDoc(doc(db,"orders",id));};
+window.editKurir=(id)=>{let k=kurirList.find(x=>x.id===id);if(!k)return;editKurirId=id;document.getElementById('kurirFormTitle').innerText="✏️ Edit Kurir: "+k.nama;document.getElementById('kNama').value=k.nama;document.getElementById('kHp').value=k.hp||"";document.getElementById('kPin').value=k.pin||"";document.getElementById('btnKurir').innerText="💾 Update Kurir";document.getElementById('btnBatalKurir').style.display='block';window.scrollTo(0,0);};
+window.batalKurir=()=>{editKurirId=null;document.getElementById('kurirFormTitle').innerText="➕ Tambah Kurir Baru";document.getElementById('kNama').value="";document.getElementById('kHp').value="";document.getElementById('kPin').value="";document.getElementById('btnKurir').innerText="💾 Simpan Kurir";document.getElementById('btnBatalKurir').style.display='none';};
+window.hapusKurir=async(id)=>{if(confirm("Hapus kurir ini?")){try{await deleteDoc(doc(db,"couriers",id));}catch(e){alert(e.message);}}};
+window.hapusOrder=async(id)=>{if(confirm("Hapus order ini?")){try{await deleteDoc(doc(db,"orders",id));}catch(e){alert(e.message);}}};
 function fmt(n){return "Rp "+Number(n||0).toLocaleString('id-ID');}
+function getEl(id){return document.getElementById(id);}
 window.render=()=>{
-  let today=new Date().toLocaleDateString('id-ID');
-  let total=orders.reduce((a,o)=>a+Number(o.totalBayar||0),0);
-  let kilo=orders.reduce((a,o)=>a+Number(o.berat||0),0);
-  let cust=new Set(orders.map(o=>o.nama)).size;
-  let hariIni=orders.filter(o=>(o.tanggalInput||o.waktu?.split(",")[0])===today).length;
-  let kirimToday=orders.filter(o=>o.tanggalKirim===today);
-  omset.innerText=fmt(total);omset2.innerText=fmt(total);pelanggan.innerText=cust;hariIni.innerText=hariIni;totalKilo.innerText=kilo.toFixed(3)+" kg";kirimHariIni.innerText=kirimToday.length;selesai.innerText=orders.filter(o=>o.status==="Selesai").length;
-  listKirim.innerHTML=kirimToday.map(o=>`<div class="row"><div><b>${o.nama} - ${o.berat} kg</b><br><small>${o.alamat||""} | ${o.noKuitansi||""}</small></div><span class="badgeKirim">KIRIM</span></div>`).join('')||"Tidak ada kirim hari ini";
-  listTerbaru.innerHTML=orders.slice(0,8).map(o=>`<div class="row"><div><b>${o.nama}</b><br><small>${o.berat} kg | Kirim: ${o.tanggalKirim||"-"} | Kurir: ${o.namaKurir||"-"}</small></div><div><b>${fmt(o.totalBayar||0)}</b><br><button class="btnSmall btnDel" onclick="hapusOrder('${o.id}')">Hapus</button></div></div>`).join('')||"Belum ada order";
-  listOmset.innerHTML=orders.map(o=>`<div class="row"><div><b>${o.nama}</b><br><small>${o.waktu||""} - ${o.berat} kg</small></div><b>${fmt(o.totalBayar||0)}</b></div>`).join('');
-  let q=(cari?.value||"").toLowerCase();let map={};orders.forEach(o=>{if(!map[o.nama])map[o.nama]=o;});
-  listPelanggan.innerHTML=Object.values(map).filter(o=>(o.nama+" "+o.hp).toLowerCase().includes(q)).map(o=>`<div class="card"><b>${o.nama}</b><br><small>${o.hp||""}<br>${o.alamat||""}<br>Order: ${orders.filter(x=>x.nama===o.nama).length}x</small></div>`).join('');
-  let now=new Date(),y=now.getFullYear(),m=now.getMonth();bulanLabel.innerText=now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
-  let days=new Date(y,m+1,0).getDate();let counts={};orders.forEach(o=>{if(!o.tanggalKirim)return;let p=o.tanggalKirim.split("/");if(p.length===3&&parseInt(p[1])-1===m)counts[parseInt(p[0])]=(counts[parseInt(p[0])]||0)+1;});
-  let html=["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(d=>`<div style="background:none;color:#94a3b8">${d}</div>`).join('');for(let d=1;d<=days;d++) html+=`<div class="${counts[d]?'has':''}">${d}${counts[d]?`<br><small>${counts[d]} kirim</small>`:""}</div>`;
-  kalender.innerHTML=html;
-  jadwalKirim.innerHTML=[...orders].sort((a,b)=>{let da=a.tanggalKirim?.split("/").reverse().join("-")||"";let db=b.tanggalKirim?.split("/").reverse().join("-")||"";return da.localeCompare(db);}).map(o=>`<div class="row"><div><b>${o.nama} - ${o.berat} kg</b><br><small>Masuk: ${o.tanggalInput||""} | Kurir: ${o.namaKurir||"-"}</small></div><span class="badgeKirim">Kirim ${o.tanggalKirim||"-"}</span></div>`).join('');
-  // List Produk CRUD
-  listProduk.innerHTML=produk.map(p=>`<div class="card"><div style="display:flex;justify-content:space-between"><div><b>${p.nama}</b><br><small>${fmt(p.harga)}/kg | ${p.desc||""}</small></div></div><br><button class="btnSmall btnEdit" onclick="editProduk('${p.id}')">✏️ Edit</button><button class="btnSmall btnDel" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button></div>`).join('')||"Belum ada produk, tambahkan di atas. Jika kosong, Kurir pakai produk default.";
-  // List Kurir CRUD + KPI
-  listKurir.innerHTML=kurirList.map(k=>{
-    let my=orders.filter(o=>o.namaKurir===k.nama);let custCount=new Set(my.map(o=>o.nama)).size;let totalKg=my.reduce((a,o)=>a+Number(o.berat||0),0);let bonus=custCount>=10?totalKg*1000:0;
-    return `<div class="card"><div style="display:flex;justify-content:space-between"><b>🏍️ ${k.nama}</b><span class="badge">PIN: ${k.pin}</span></div><small>${k.hp||""}</small>
-    <p style="margin:10px 0 4px">📊 Indikator 1: ${custCount} / 10 Pelanggan</p><div class="bar"><div style="width:${Math.min(100,custCount*10)}%"></div></div>
-    <p>Hadiah: ${custCount>=10?"Gaji 50k + Bensin 20k 🎉":"Belum"}</p>
-    <p>📊 Indikator 2: Bonus <b style="color:#4ade80">${fmt(Math.round(bonus))}</b> | Total Kg: ${totalKg.toFixed(3)} kg</p>
-    <br><button class="btnSmall btnEdit" onclick="editKurir('${k.id}')">✏️ Edit</button><button class="btnSmall btnDel" onclick="hapusKurir('${k.id}')">🗑️ Hapus</button></div>`;
-  }).join('')||"Belum ada kurir, tambahkan di atas.";
+  try{
+    let today=new Date().toLocaleDateString('id-ID');
+    let total=orders.reduce((a,o)=>a+Number(o.totalBayar||o.total||0),0);
+    let kilo=orders.reduce((a,o)=>a+Number(o.berat||0),0);
+    let cust=new Set(orders.map(o=>o.nama||"Tanpa Nama")).size;
+    let hariIni=orders.filter(o=>{let t=o.tanggalInput||(o.waktu?String(o.waktu).split(",")[0]:"");return t===today;}).length;
+    let kirimToday=orders.filter(o=>o.tanggalKirim===today);
+    getEl('omset').innerText=fmt(total);getEl('omset2').innerText=fmt(total);getEl('pelanggan').innerText=cust;getEl('hariIni').innerText=hariIni;getEl('totalKilo').innerText=kilo.toFixed(3)+" kg";getEl('kirimHariIni').innerText=kirimToday.length;getEl('selesai').innerText=orders.filter(o=>o.status==="Selesai").length;
+    getEl('listKirim').innerHTML=kirimToday.map(o=>`<div class="row"><div><b>${o.nama||"-"} - ${o.berat||0} kg</b><br><small>${o.alamat||""} | ${o.noKuitansi||""}</small></div><span class="badgeKirim">KIRIM</span></div>`).join('')||"Tidak ada kirim hari ini";
+    getEl('listTerbaru').innerHTML=orders.slice(0,8).map(o=>`<div class="row"><div><b>${o.nama||"-"}</b><br><small>${o.berat||0} kg | Kirim: ${o.tanggalKirim||"-"} | Kurir: ${o.namaKurir||o.kurir||"-"}</small></div><div><b>${fmt(o.totalBayar||0)}</b><br><button class="btnSmall btnDel" onclick="hapusOrder('${o.id}')">Hapus</button></div></div>`).join('')||"Belum ada order";
+    getEl('listOmset').innerHTML=orders.map(o=>`<div class="row"><div><b>${o.nama||"-"}</b><br><small>${o.waktu||""} - ${o.berat||0} kg</small></div><b>${fmt(o.totalBayar||0)}</b></div>`).join('')||"Belum ada omset";
+    let q=(getEl('cari')?.value||"").toLowerCase();let map={};orders.forEach(o=>{if(o.nama&&!map[o.nama])map[o.nama]=o;});
+    getEl('listPelanggan').innerHTML=Object.values(map).filter(o=>(o.nama+" "+(o.hp||"")).toLowerCase().includes(q)).map(o=>`<div class="card"><b>${o.nama}</b><br><small>${o.hp||""}<br>${o.alamat||""}<br>Order: ${orders.filter(x=>x.nama===o.nama).length}x</small></div>`).join('')||"Belum ada pelanggan";
+    let now=new Date(),y=now.getFullYear(),m=now.getMonth();getEl('bulanLabel').innerText=now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+    let days=new Date(y,m+1,0).getDate();let counts={};orders.forEach(o=>{if(!o.tanggalKirim)return;let p=String(o.tanggalKirim).split("/");if(p.length===3&&parseInt(p[1])-1===m)counts[parseInt(p[0])]=(counts[parseInt(p[0])]||0)+1;});
+    let html=["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(d=>`<div style="background:none;color:#94a3b8">${d}</div>`).join('');for(let d=1;d<=days;d++) html+=`<div class="${counts[d]?'has':''}">${d}${counts[d]?`<br><small>${counts[d]} kirim</small>`:""}</div>`;
+    getEl('kalender').innerHTML=html;
+    getEl('jadwalKirim').innerHTML=[...orders].sort((a,b)=>{let da=String(a.tanggalKirim||"").split("/").reverse().join("-");let db=String(b.tanggalKirim||"").split("/").reverse().join("-");return da.localeCompare(db);}).map(o=>`<div class="row"><div><b>${o.nama||"-"} - ${o.berat||0} kg</b><br><small>Masuk: ${o.tanggalInput||""} | Kurir: ${o.namaKurir||"-"}</small></div><span class="badgeKirim">Kirim ${o.tanggalKirim||"-"}</span></div>`).join('')||"Belum ada jadwal";
+    getEl('listProduk').innerHTML=produk.map(p=>`<div class="card"><b>${p.nama}</b><br><small>${fmt(p.harga)}/kg | ${p.desc||""}</small><br><br><button class="btnSmall btnEdit" onclick="editProduk('${p.id}')">✏️ Edit</button><button class="btnSmall btnDel" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button></div>`).join('')||"Belum ada produk di Firestore. Tambahkan di atas. Kalau kosong, kurir pakai produk default.";
+    getEl('listKurir').innerHTML=kurirList.map(k=>{
+      let my=orders.filter(o=>(o.namaKurir||o.kurir)===k.nama);let custCount=new Set(my.map(o=>o.nama)).size;let totalKg=my.reduce((a,o)=>a+Number(o.berat||0),0);let bonus=custCount>=10?totalKg*1000:0;
+      return `<div class="card"><div style="display:flex;justify-content:space-between"><b>🏍️ ${k.nama}</b><span class="badge">PIN: ${k.pin}</span></div><small>${k.hp||""}</small>
+      <p style="margin:10px 0 4px">📊 Indikator 1: ${custCount} / 10 Pelanggan</p><div class="bar"><div style="width:${Math.min(100,custCount*10)}%"></div></div>
+      <p>Hadiah: ${custCount>=10?"Gaji 50k + Bensin 20k 🎉":"Belum"}</p>
+      <p>📊 Indikator 2: Bonus <b style="color:#4ade80">${fmt(Math.round(bonus))}</b> | Total Kg: ${totalKg.toFixed(3)} kg</p>
+      <br><button class="btnSmall btnEdit" onclick="editKurir('${k.id}')">✏️ Edit</button><button class="btnSmall btnDel" onclick="hapusKurir('${k.id}')">🗑️ Hapus</button></div>`;
+    }).join('')||"Belum ada kurir, tambahkan di atas.";
+  }catch(e){showErr("Render gagal: "+e.message);}
 };
-onSnapshot(query(collection(db,"orders"),orderBy("waktu","desc")),(s)=>{orders=[];s.forEach(d=>{let o=d.data();o.id=d.id;orders.push(o);});render();});
-onSnapshot(collection(db,"products"),(s)=>{produk=[];s.forEach(d=>{let o=d.data();o.id=d.id;produk.push(o);});render();});
-onSnapshot(collection(db,"couriers"),(s)=>{kurirList=[];s.forEach(d=>{let o=d.data();o.id=d.id;kurirList.push(o);});render();});
+// FIX UTAMA: TANPA orderBy, biar data lama yang waktunya aneh tetap muncul
+if(db){
+  onSnapshot(collection(db,"orders"),(s)=>{orders=[];s.forEach(d=>{let o=d.data();o.id=d.id;orders.push(o);});orders.sort((a,b)=>String(b.waktu||"").localeCompare(String(a.waktu||"")));document.getElementById('statusKoneksi').innerText="🟢 Tersambung - "+orders.length+" order ke-load";document.getElementById('statusKoneksi').style.color="#4ade80";render();},(e)=>{showErr("Firestore Orders: "+e.message+" - Cek Rules di Firebase Console > Firestore > Rules harus allow read, write");});
+  onSnapshot(collection(db,"products"),(s)=>{produk=[];s.forEach(d=>{let o=d.data();o.id=d.id;produk.push(o);});render();},(e)=>{showErr("Firestore Products: "+e.message);});
+  onSnapshot(collection(db,"couriers"),(s)=>{kurirList=[];s.forEach(d=>{let o=d.data();o.id=d.id;kurirList.push(o);});render();},(e)=>{showErr("Firestore Couriers: "+e.message);});
+}
+render();
 </script></body></html>
