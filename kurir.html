@@ -2,123 +2,147 @@
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Shaka Laundry - Kurir</title>
 <meta name="theme-color" content="#0f172a">
-<style>*{box-sizing:border-box;font-family:system-ui}body{background:#0f172a;color:#fff;padding:16px;max-width:520px;margin:auto;padding-bottom:40px}input,select,textarea,button{width:100%;padding:13px;margin:7px 0;border-radius:12px;border:none;font-size:15px}input,select,textarea{background:#1e293b;color:#fff;outline:none}input:disabled,select:disabled{background:#0f172a;color:#94a3b8}button{background:#22c55e;font-weight:bold;color:#fff}.card{background:#1e293b;padding:16px;border-radius:16px;margin:12px 0}.top{display:flex;justify-content:space-between;align-items:center}.dot{width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block}.dot.on{background:#22c55e}.bar{background:#0f172a;height:14px;border-radius:10px;overflow:hidden}.bar>div{background:#22c55e;height:100%}.badge{background:#064e3b;color:#34d399;padding:4px 10px;border-radius:20px;font-size:12px}.struk{background:#fff;color:#000;padding:16px;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.5}.lock{font-size:12px;color:#fbbf24;background:#451a03;padding:6px 10px;border-radius:8px;display:inline-block}@media print{body *{visibility:hidden}.struk,.struk *{visibility:visible}.struk{position:absolute;left:0;top:0;width:100%}}</style>
+<style>*{box-sizing:border-box;font-family:system-ui}body{background:#0f172a;color:#fff;padding:16px;max-width:520px;margin:auto;padding-bottom:40px}input,select,textarea,button{width:100%;padding:13px;margin:7px 0;border-radius:12px;border:none;font-size:15px}input,select,textarea{background:#1e293b;color:#fff;outline:none}input:disabled{background:#0f172a;color:#94a3b8}button{background:#22c55e;font-weight:bold;color:#fff}.card{background:#1e293b;padding:16px;border-radius:16px;margin:12px 0}.top{display:flex;justify-content:space-between;align-items:center}.dot{width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block}.dot.on{background:#22c55e}.bar{background:#0f172a;height:14px;border-radius:10px;overflow:hidden}.bar>div{background:#22c55e;height:100%}.badge{background:#064e3b;color:#34d399;padding:4px 10px;border-radius:20px;font-size:12px}.struk{background:#fff;color:#000;padding:16px;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.5}.lock{font-size:12px;color:#fbbf24;background:#451a03;padding:6px 10px;border-radius:8px;display:inline-block}@media print{body *{visibility:hidden}.struk,.struk *{visibility:visible}.struk{position:absolute;left:0;top:0;width:100%}}</style>
 </head><body>
+<div id="debug" style="background:#7f1d1d;padding:10px;border-radius:12px;display:none;font-size:13px"></div>
 <div id="login">
 <h1 style="text-align:center">🧺 Shaka Laundry<br><small style="color:#94a3b8">APP KURIR</small></h1>
 <div class="card">
 <p><b>1. Pilih Nama Kurir Kamu</b></p>
-<select id="pilihKurir"><option value="">-- Pilih Nama Kurir --</option></select>
+<select id="pilihKurir"><option value="">⏳ Loading nama kurir dari Bos...</option></select>
+<p id="kurirInfo" style="color:#fbbf24;font-size:13px">⏳ Menghubungkan ke Firebase...</p>
 <p><b>2. Masukkan PIN Kamu (4 Angka)</b></p>
-<input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="****">
+<input id="pinKurirInput" type="password" inputmode="numeric" maxlength="4" placeholder="****">
 <button onclick="loginKurir()">Masuk</button>
 <p id="loginErr" style="color:#f87171"></p>
-<p style="color:#94a3b8;font-size:13px">Login dikunci per nama. PIN diatur Bos.</p>
 </div>
 <button onclick="installApp()" style="background:#1e293b">📲 Install App Kurir ke HP</button>
+<p style="color:#94a3b8;font-size:12px;text-align:center">Kalau dropdown nama gak muncul, cek kotak merah di atas / cek Rules Firestore</p>
 </div>
 
 <div id="app" style="display:none">
 <div class="top"><b>🧺 Halo, <span id="namaKurirLogin"></span>!</b><div><span id="btDot" class="dot"></span> <button onclick="toggleBT()" style="width:auto;padding:8px 12px;background:#334155;font-size:12px" id="btBtn">🔵 Printer: OFF</button></div></div>
 <p style="color:#94a3b8;font-size:13px">Puri Cipageran Indah 1 Blok A No 151 | CS 089526193272</p>
-<p><span class="lock">🔒 MODE KURIR: Hanya bisa INPUT order baru. TIDAK BISA EDIT / HAPUS / UBAH HARGA. Semua terkunci Bos.</span></p>
+<p><span class="lock">🔒 MODE KURIR: Hanya bisa INPUT order baru. TIDAK BISA EDIT / HAPUS / UBAH HARGA.</span></p>
 
-<div class="card"><b>➕ Input Order Baru (Tidak Bisa Diubah Setelah Simpan)</b>
+<div class="card"><b>➕ Input Order Baru</b>
 <input id="nama" placeholder="Nama Pelanggan *">
 <input id="hp" placeholder="No HP / WA">
 <textarea id="alamat" placeholder="Alamat / Lokasi Pelanggan *"></textarea>
-<label style="font-size:13px;color:#94a3b8">Produk / Layanan - 🔒 Dikunci Bos, Kurir tidak bisa ubah harga</label>
+<label style="font-size:13px;color:#94a3b8">Produk - 🔒 Dikunci Bos</label>
 <select id="layanan"><option value="">Loading produk dari Bos...</option></select>
-<label style="font-size:13px;color:#94a3b8">📸 Foto Timbangan (Bukti, Wajib)</label>
+<label style="font-size:13px;color:#94a3b8">📸 Foto Timbangan (Bukti Wajib)</label>
 <input id="foto" type="file" accept="image/*" capture="environment" onchange="previewFoto(event)">
 <img id="preview" style="width:100%;border-radius:12px;display:none">
 <input id="berat" type="number" step="0.001" placeholder="Berat (kg) Contoh: 5.679" oninput="hitung()">
 <div style="background:#0f172a;padding:12px;border-radius:12px">
 <div style="display:flex;justify-content:space-between"><span>Subtotal (Otomatis)</span><b id="subtotal">Rp 0</b></div>
-<div style="display:flex;justify-content:space-between"><span>Antar Jemput (Otomatis)</span><b>Rp 5.000</b></div>
+<div style="display:flex;justify-content:space-between"><span>Antar Jemput</span><b>Rp 5.000</b></div>
 <div style="display:flex;justify-content:space-between;font-size:20px;margin-top:8px"><span>TOTAL BAYAR</span><b id="total" style="color:#4ade80">Rp 0</b></div>
-<small style="color:#94a3b8">Total dihitung otomatis sistem, kurir tidak bisa ketik manual.</small>
 </div>
-<label style="font-size:13px;color:#94a3b8">Pembayaran</label>
 <select id="bayar"><option value="QRIS">QRIS</option><option value="MANUAL">MANUAL / Tunai</option></select>
 <div id="qrisBox" style="background:#0f172a;padding:12px;border-radius:12px;text-align:center">QRIS Shaka Laundry<br><div style="font-size:40px">📷</div></div>
-<!-- Nama Kurir Terkunci, tidak bisa diganti-ganti -->
-<label style="font-size:13px;color:#94a3b8">Kurir Pengambil - 🔒 Terkunci sesuai login</label>
+<label style="font-size:13px;color:#94a3b8">Kurir Pengambil - 🔒 Terkunci</label>
 <input id="namaKurirFix" disabled value="">
-<button onclick="simpan()" id="btnSimpan">💾 Simpan Order - TIDAK BISA DIBATALKAN / DIEDIT</button>
-<p style="color:#fbbf24;font-size:12px">⚠️ Pastikan data benar sebelum Simpan. Kalau salah, hubungi Bos untuk perbaikan. Kurir tidak bisa edit/hapus.</p>
+<button onclick="simpan()" id="btnSimpan">💾 Simpan Order - TIDAK BISA DIEDIT / DIHAPUS</button>
+<p style="color:#fbbf24;font-size:12px">⚠️ Pastikan benar sebelum Simpan. Kalau salah hubungi Bos.</p>
 </div>
 
 <div id="strukArea"></div>
 
-<div class="card"><b>🏆 KPI SAYA (Lihat Saja)</b><br><small style="color:#94a3b8">10 Pelanggan = Gaji 50k + Bensin 20k. Setelah itu Bonus 1k/kg. Dihitung otomatis sistem.</small>
+<div class="card"><b>🏆 KPI SAYA (Lihat Saja)</b><br><small style="color:#94a3b8">10 Pelanggan = Gaji 50k + Bensin 20k. Setelah itu Bonus 1k/kg.</small>
 <div style="display:flex;justify-content:space-between;margin-top:10px"><b id="kpiText">0 / 10</b><span id="kpiBadge" class="badge">Belum Tercapai</span></div>
 <div class="bar" style="margin:10px 0"><div id="kpiBar" style="width:0%"></div></div>
 <div id="kpiHadiah" style="background:#064e3b;padding:12px;border-radius:12px;display:none">🎉 TERCAPAI! Klaim ke Bos: Gaji 50k + Bensin 20k</div>
 <b>💰 Bonus Saya: <span id="totalBonus" style="color:#4ade80">Rp 0</span></b> | Total Kg: <span id="totalKg">0</span> kg
 </div>
 
-<div class="card"><b>📋 Order Saya Hari Ini (Lihat Saja - Tidak Bisa Edit/Hapus)</b><div id="listOrder"></div></div>
+<div class="card"><b>📋 Order Saya (Lihat Saja)</b><div id="listOrder"></div></div>
 <button onclick="location.reload()" style="background:#334155">🚪 Logout / Ganti Kurir</button>
 </div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getFirestore,collection,addDoc,onSnapshot,query,orderBy} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,addDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+function showErr(msg){let d=document.getElementById('debug');d.style.display='block';d.innerText="ERROR: "+msg;}
+window.addEventListener('error',e=>{showErr(e.message||"Script error");});
 const firebaseConfig={apiKey:"AIzaSyAihBZqdi4Cn5LbYagXDrffa4a6ysgVJn4",authDomain:"shaka-laundry.firebaseapp.com",projectId:"shaka-laundry",storageBucket:"shaka-laundry.firebasestorage.app",messagingSenderId:"228092735547",appId:"1:228092735547:web:6fa73a5c43dc654cfd2c1e",measurementId:"G-NNRWFP11RB"};
-const app=initializeApp(firebaseConfig);const db=getFirestore(app);
+let db;
+try{const app=initializeApp(firebaseConfig);db=getFirestore(app);}catch(e){showErr("Firebase gagal: "+e.message);}
 let orders=[],produk=[],kurirList=[],kurirLogin=null,fotoBase64="",deferredPrompt=null;
+function getEl(id){return document.getElementById(id);}
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
 window.installApp=()=>{if(deferredPrompt)deferredPrompt.prompt();else alert("Klik titik 3 > Add to Home Screen");};
-window.toggleBT=async()=>{try{const d=await navigator.bluetooth.requestDevice({acceptAllDevices:true});document.getElementById('btDot').classList.add('on');document.getElementById('btBtn').innerText="🟢 Tersambung: "+(d.name||"Printer");}catch(e){alert("Bluetooth dibatalkan / tidak didukung");}};
-window.previewFoto=(e)=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=ev=>{fotoBase64=ev.target.result;let img=document.getElementById('preview');img.src=fotoBase64;img.style.display='block';};r.readAsDataURL(f);};
-window.hitung=()=>{let b=parseFloat(berat.value)||0;let h=parseInt(layanan.value.split("|")[1]||0);let sub=b*h,tot=sub+5000;subtotal.innerText="Rp "+sub.toLocaleString('id-ID');total.innerText="Rp "+tot.toLocaleString('id-ID');return {sub,tot};};
-layanan.addEventListener('change',hitung);
-bayar.addEventListener('change',e=>{qrisBox.style.display=e.target.value==="QRIS"?"block":"none";});
-window.loginKurir=()=>{
-  let id=pilihKurir.value,pinVal=pin.value;
-  if(!id) return loginErr.innerText="Pilih nama dulu!";
-  let k=kurirList.find(x=>x.id===id);
-  if(!k) return loginErr.innerText="Kurir tidak ditemukan!";
-  if(String(k.pin)!==pinVal) return loginErr.innerText="PIN Salah untuk "+k.nama+"!";
-  kurirLogin=k;login.style.display='none';app.style.display='block';namaKurirLogin.innerText=k.nama;namaKurirFix.value=k.nama+" (Terkunci)";
+window.toggleBT=async()=>{try{const d=await navigator.bluetooth.requestDevice({acceptAllDevices:true});getEl('btDot').classList.add('on');getEl('btBtn').innerText="🟢 Tersambung: "+(d.name||"Printer");}catch(e){alert("Bluetooth dibatalkan / tidak didukung");}};
+window.previewFoto=(e)=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=ev=>{fotoBase64=ev.target.result;let img=getEl('preview');img.src=fotoBase64;img.style.display='block';};r.readAsDataURL(f);};
+window.hitung=()=>{
+  let b=parseFloat(getEl('berat').value)||0;
+  let val=getEl('layanan').value||"";
+  let h=val.includes("|")?parseInt(val.split("|")[1]||0):0;
+  let sub=b*h,tot=sub+5000;
+  getEl('subtotal').innerText="Rp "+sub.toLocaleString('id-ID');getEl('total').innerText="Rp "+tot.toLocaleString('id-ID');
+  return {sub,tot};
 };
-// TIDAK ADA FUNGSI EDIT / HAPUS DI KURIR - SENGAJA DIHAPUS BIAR ANTI CURANG
+getEl('layanan').addEventListener('change',hitung);
+getEl('bayar').addEventListener('change',e=>{getEl('qrisBox').style.display=e.target.value==="QRIS"?"block":"none";});
+window.loginKurir=()=>{
+  let id=getEl('pilihKurir').value,pinVal=getEl('pinKurirInput').value;
+  if(!id) return getEl('loginErr').innerText="Pilih nama dulu! Kalau dropdown kosong, berarti data kurir belum ke-load, cek kotak merah di atas.";
+  let k=kurirList.find(x=>x.id===id);
+  if(!k) return getEl('loginErr').innerText="Kurir tidak ditemukan!";
+  if(String(k.pin)!==pinVal) return getEl('loginErr').innerText="PIN Salah untuk "+k.nama+"! PIN yang benar diatur Bos di Dashboard > Kurir.";
+  kurirLogin=k;getEl('login').style.display='none';getEl('app').style.display='block';getEl('namaKurirLogin').innerText=k.nama;getEl('namaKurirFix').value=k.nama+" (Terkunci)";renderKurir();
+};
 window.simpan=async()=>{
   if(!confirm("Yakin data sudah benar? Order TIDAK BISA diedit / dihapus setelah disimpan. Lanjut?")) return;
-  let n=nama.value,h=hp.value,a=alamat.value,b=parseFloat(berat.value),bayarVal=bayar.value;
-  if(!n||!a||!b||!layanan.value) return alert("Isi Nama, Alamat, Produk & Berat!");
+  let n=getEl('nama').value,h=getEl('hp').value,a=getEl('alamat').value,b=parseFloat(getEl('berat').value),bayarVal=getEl('bayar').value;
+  if(!n||!a||!b||!getEl('layanan').value) return alert("Isi Nama, Alamat, Produk & Berat!");
   if(!fotoBase64) return alert("Foto timbangan wajib! Buat bukti anti curang.");
-  let layananNama=layanan.value.split("|")[0],harga=parseInt(layanan.value.split("|")[1]);
+  let layananNama=getEl('layanan').value.split("|")[0],harga=parseInt(getEl('layanan').value.split("|")[1]);
   let {sub,tot}=hitung();
   let tgl=new Date();let tglKirim=new Date(tgl);tglKirim.setDate(tglKirim.getDate()+2);
   let noKuit="SHAKA-"+tgl.getFullYear()+String(tgl.getMonth()+1).padStart(2,'0')+String(tgl.getDate()).padStart(2,'0')+"-"+String(orders.length+1).padStart(3,'0');
   let data={nama:n,hp:h,alamat:a,layanan:layananNama+" - Rp "+harga.toLocaleString('id-ID')+"/kg",layananNama:layananNama,berat:b,fotoTimbangan:fotoBase64,subtotal:sub,biayaAntar:5000,totalBayar:tot,metodePembayaran:bayarVal,noKuitansi:noKuit,namaKurir:kurirLogin.nama,waktu:tgl.toLocaleString('id-ID'),tanggalInput:tgl.toLocaleDateString('id-ID'),tanggalKirim:tglKirim.toLocaleDateString('id-ID'),status:"Baru",kurir:kurirLogin.nama,locked:true};
-  await addDoc(collection(db,"orders"),data);
-  document.getElementById('strukArea').innerHTML=`<div class="struk"><center><b>SHAKA LAUNDRY</b><br>Puri Cipageran Indah 1 Blok A No 151<br>CS: 089526193272<br>------------------------------</center>No Kuitansi: ${noKuit}<br>Pelanggan: ${n}<br>HP: ${h}<br>Alamat: ${a}<br>Kurir: ${kurirLogin.nama}<br>Tgl Masuk: ${data.waktu}<br>Tgl Kirim: ${data.tanggalKirim}<br>------------------------------<br>Layanan: ${layananNama}<br>Berat: ${b} kg<br>Subtotal: Rp ${sub.toLocaleString('id-ID')}<br>Antar Jemput: Rp 5.000<br><b>TOTAL: Rp ${tot.toLocaleString('id-ID')}</b><br>Pembayaran: ${bayarVal}<br>------------------------------<center>Terima Kasih 🙏</center></div><button onclick="window.print()" style="background:#7c3aed">🖨️ Print Struk</button>`;
-  nama.value="";hp.value="";alamat.value="";berat.value="";fotoBase64="";preview.style.display='none';hitung();
-  alert("Tersimpan & Terkunci! Kuitansi: "+noKuit+" - Hubungi Bos jika ada salah input.");
+  try{await addDoc(collection(db,"orders"),data);}catch(e){return alert("Gagal simpan: "+e.message+" - Cek Rules Firestore harus Allow write");}
+  getEl('strukArea').innerHTML=`<div class="struk"><center><b>SHAKA LAUNDRY</b><br>Puri Cipageran Indah 1 Blok A No 151<br>CS: 089526193272<br>------------------------------</center>No Kuitansi: ${noKuit}<br>Pelanggan: ${n}<br>HP: ${h}<br>Alamat: ${a}<br>Kurir: ${kurirLogin.nama}<br>Tgl Masuk: ${data.waktu}<br>Tgl Kirim: ${data.tanggalKirim}<br>------------------------------<br>Layanan: ${layananNama}<br>Berat: ${b} kg<br>Subtotal: Rp ${sub.toLocaleString('id-ID')}<br>Antar Jemput: Rp 5.000<br><b>TOTAL: Rp ${tot.toLocaleString('id-ID')}</b><br>Pembayaran: ${bayarVal}<br>------------------------------<center>Terima Kasih 🙏</center></div><button onclick="window.print()" style="background:#7c3aed">🖨️ Print Struk</button>`;
+  getEl('nama').value="";getEl('hp').value="";getEl('alamat').value="";getEl('berat').value="";fotoBase64="";getEl('preview').style.display='none';hitung();
+  alert("Tersimpan & Terkunci! Kuitansi: "+noKuit);
 };
-onSnapshot(collection(db,"couriers"),(s)=>{
-  kurirList=[];s.forEach(d=>{let o=d.data();o.id=d.id;kurirList.push(o);});
-  pilihKurir.innerHTML=kurirList.length===0?`<option value="">-- Belum ada kurir, minta Bos buatkan --</option>`:`<option value="">-- Pilih Nama Kurir --</option>`+kurirList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
-});
-onSnapshot(collection(db,"products"),(s)=>{
-  produk=[];s.forEach(d=>{let o=d.data();o.id=d.id;produk.push(o);});
-  if(produk.length===0) produk=[{nama:"Cuci Kering",harga:7000},{nama:"Cuci Setrika",harga:10000},{nama:"Setrika Saja",harga:5000}];
-  layanan.innerHTML=produk.map(p=>`<option value="${p.nama}|${p.harga}">${p.nama} - Rp ${Number(p.harga).toLocaleString('id-ID')}/kg</option>`).join('');hitung();
-});
-onSnapshot(query(collection(db,"orders"),orderBy("waktu","desc")),(s)=>{
-  orders=[];s.forEach(d=>{let o=d.data();o.id=d.id;orders.push(o);});
-  let myOrders=orders.filter(o=>!kurirLogin || o.namaKurir===kurirLogin.nama);
+function renderKurir(){
+  if(!kurirLogin) return;
+  let myOrders=orders.filter(o=>(o.namaKurir||o.kurir)===kurirLogin.nama);
   let totalCust=new Set(myOrders.map(o=>o.nama)).size;
   let totalKg=myOrders.reduce((a,o)=>a+Number(o.berat||0),0);
   let bonus=totalCust>=10?totalKg*1000:0;
-  kpiText.innerText=totalCust+" / 10 Pelanggan";kpiBar.style.width=Math.min(100,totalCust*10)+"%";
-  kpiBadge.innerText=totalCust>=10?"TERCAPAI 🎉":"Belum Tercapai";
-  kpiHadiah.style.display=totalCust>=10?"block":"none";
-  totalBonus.innerText="Rp "+Math.round(bonus).toLocaleString('id-ID');totalKg.innerText=totalKg.toFixed(3);
-  // LIST HANYA LIHAT SAJA, TANPA TOMBOL EDIT / HAPUS
-  listOrder.innerHTML=myOrders.map(o=>`<div style="background:#0f172a;padding:12px;border-radius:12px;margin:8px 0"><b>${o.nama}</b> - ${o.berat} kg <span style="color:#fbbf24;font-size:11px">🔒 Terkunci</span><br><small>${o.alamat} | ${o.noKuitansi||""}<br>Total: Rp ${Number(o.totalBayar||0).toLocaleString('id-ID')} | Kirim: ${o.tanggalKirim} | ${o.metodePembayaran||""}</small></div>`).join('')||"Belum ada order kamu";
-});
+  getEl('kpiText').innerText=totalCust+" / 10 Pelanggan";getEl('kpiBar').style.width=Math.min(100,totalCust*10)+"%";
+  getEl('kpiBadge').innerText=totalCust>=10?"TERCAPAI 🎉":"Belum Tercapai";
+  getEl('kpiHadiah').style.display=totalCust>=10?"block":"none";
+  getEl('totalBonus').innerText="Rp "+Math.round(bonus).toLocaleString('id-ID');getEl('totalKg').innerText=totalKg.toFixed(3);
+  getEl('listOrder').innerHTML=myOrders.map(o=>`<div style="background:#0f172a;padding:12px;border-radius:12px;margin:8px 0"><b>${o.nama||"-"}</b> - ${o.berat||0} kg <span style="color:#fbbf24;font-size:11px">🔒 Terkunci</span><br><small>${o.alamat||""} | ${o.noKuitansi||""}<br>Total: Rp ${Number(o.totalBayar||0).toLocaleString('id-ID')} | Kirim: ${o.tanggalKirim||"-"} | ${o.metodePembayaran||""}</small></div>`).join('')||"Belum ada order kamu";
+}
+// FIX UTAMA: TANPA orderBy, biar gak error lagi
+if(db){
+  onSnapshot(collection(db,"couriers"),(s)=>{
+    kurirList=[];s.forEach(d=>{let o=d.data();o.id=d.id;kurirList.push(o);});
+    getEl('kurirInfo').innerText="🟢 Tersambung - "+kurirList.length+" kurir ke-load";
+    getEl('kurirInfo').style.color="#4ade80";
+    if(kurirList.length===0){
+      getEl('pilihKurir').innerHTML=`<option value="">-- Belum ada kurir --</option>`;
+      getEl('kurirInfo').innerText="⚠️ Belum ada kurir di Firestore. Tambahkan di Dashboard > Kurir dulu.";
+      getEl('kurirInfo').style.color="#fbbf24";
+    } else {
+      getEl('pilihKurir').innerHTML=`<option value="">-- Pilih Nama Kurir --</option>`+kurirList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
+    }
+  },(e)=>{showErr("Firestore Couriers: "+e.message);getEl('kurirInfo').innerText="❌ Gagal load kurir: "+e.message;});
+  onSnapshot(collection(db,"products"),(s)=>{
+    produk=[];s.forEach(d=>{let o=d.data();o.id=d.id;produk.push(o);});
+    if(produk.length===0) produk=[{nama:"Cuci Kering",harga:7000},{nama:"Cuci Setrika",harga:10000},{nama:"Setrika Saja",harga:5000}];
+    getEl('layanan').innerHTML=produk.map(p=>`<option value="${p.nama}|${p.harga}">${p.nama} - Rp ${Number(p.harga).toLocaleString('id-ID')}/kg</option>`).join('');hitung();
+  },(e)=>{showErr("Firestore Products: "+e.message);});
+  onSnapshot(collection(db,"orders"),(s)=>{
+    orders=[];s.forEach(d=>{let o=d.data();o.id=d.id;orders.push(o);});
+    orders.sort((a,b)=>String(b.waktu||"").localeCompare(String(a.waktu||"")));
+    renderKurir();
+  },(e)=>{showErr("Firestore Orders: "+e.message);});
+}
 </script></body></html>
