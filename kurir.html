@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shaka Laundry - Kurir</title>
+<link rel="manifest" href="data:application/json,{%22name%22:%22Shaka%20Laundry%20Kurir%22,%22short_name%22:%22Kurir%22,%22display%22:%22standalone%22,%22start_url%22:%22./kurir.html%22}">
+<meta name="theme-color" content="#0f172a">
+<style>*{box-sizing:border-box;font-family:system-ui}body{background:#0f172a;color:#fff;padding:16px;max-width:520px;margin:auto;padding-bottom:40px}input,select,textarea,button{width:100%;padding:13px;margin:7px 0;border-radius:12px;border:none;font-size:15px}input,select,textarea{background:#1e293b;color:#fff;outline:none}button{background:#22c55e;font-weight:bold;color:#fff}button:disabled{background:#475569}.card{background:#1e293b;padding:16px;border-radius:16px;margin:12px 0}.top{display:flex;justify-content:space-between;align-items:center}.dot{width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block}.dot.on{background:#22c55e;box-shadow:0 0 8px #22c55e}.bar{background:#0f172a;height:14px;border-radius:10px;overflow:hidden}.bar>div{background:#22c55e;height:100%;transition:.3s}.badge{background:#064e3b;color:#34d399;padding:4px 10px;border-radius:20px;font-size:12px}.struk{background:#fff;color:#000;padding:16px;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.5}@media print{body *{visibility:hidden}.struk, .struk *{visibility:visible}.struk{position:absolute;left:0;top:0;width:100%}}</style>
+</head><body>
+<div id="login">
+<h1 style="text-align:center">🧺 Shaka Laundry<br><small style="color:#94a3b8">APP KURIR</small></h1>
+<div class="card"><p>Masukkan PIN Kurir (4 Angka)</p><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="****"><button onclick="loginKurir()">Masuk</button><p id="loginErr" style="color:#f87171"></p><p style="color:#94a3b8;font-size:13px">PIN default: 1234<br>Bisa diubah Bos di Dashboard</p></div>
+<button onclick="installApp()" style="background:#1e293b">📲 Install App Kurir ke HP</button>
+</div>
+
+<div id="app" style="display:none">
+<div class="top"><b>🧺 Halo, Kurir!</b><div><span id="btDot" class="dot"></span> <button id="btBtn" onclick="toggleBT()" style="width:auto;padding:8px 12px;background:#334155;font-size:12px">🔵 Bluetooth Printer: OFF</button></div></div>
+<p style="color:#94a3b8;font-size:13px">Perumahan Puri Cipageran Indah 1 Blok A No 151 | CS 089526193272</p>
+
+<div class="card"><b>➕ Tambah Pelanggan / Order Baru</b>
+<input id="nama" placeholder="Nama Pelanggan *">
+<input id="hp" placeholder="No HP / WA">
+<textarea id="alamat" placeholder="Alamat / Lokasi Pelanggan * Contoh: Blok B No 10"></textarea>
+<select id="layanan"><option value="Cuci Kering|7000">Cuci Kering - Rp 7.000/kg</option><option value="Cuci Setrika|10000">Cuci Setrika - Rp 10.000/kg</option><option value="Setrika Saja|5000">Setrika Saja - Rp 5.000/kg</option></select>
+<label style="font-size:13px;color:#94a3b8">📸 Foto Timbangan</label>
+<input id="foto" type="file" accept="image/*" capture="environment" onchange="previewFoto(event)">
+<img id="preview" style="width:100%;border-radius:12px;display:none">
+<input id="berat" type="number" step="0.001" placeholder="Berat (kg) Contoh: 5.679" oninput="hitung()">
+<div style="background:#0f172a;padding:12px;border-radius:12px">
+<div style="display:flex;justify-content:space-between"><span>Subtotal Laundry</span><b id="subtotal">Rp 0</b></div>
+<div style="display:flex;justify-content:space-between"><span>Biaya Antar Jemput</span><b>Rp 5.000</b></div>
+<div style="display:flex;justify-content:space-between;font-size:20px;margin-top:8px"><span>TOTAL BAYAR</span><b id="total" style="color:#4ade80">Rp 0</b></div>
+</div>
+<label style="font-size:13px;color:#94a3b8">Pembayaran</label>
+<select id="bayar"><option value="QRIS">QRIS</option><option value="MANUAL">MANUAL / Tunai</option></select>
+<div id="qrisBox" class="card" style="background:#0f172a;text-align:center">QRIS Shaka Laundry<br><div style="font-size:50px">📷</div><small>Scan QRIS di atas - Tampilkan ke pelanggan</small></div>
+<input id="namaKurir" placeholder="Nama Kurir Pengambil * Contoh: Andi">
+<button onclick="simpan()" id="btnSimpan">💾 Simpan Order + Buat Kuitansi</button>
+</div>
+
+<div id="strukArea"></div>
+
+<div class="card"><b>🏆 KPI KURIR</b><p style="color:#94a3b8;font-size:13px">Target: 10 Pelanggan Pertama = Gaji Rp 50.000 + Bensin Rp 20.000. Setelah itu Bonus Rp 1.000/kg</p>
+<div style="display:flex;justify-content:space-between"><b id="kpiText">0 / 10 Pelanggan</b><span id="kpiBadge" class="badge">Belum Tercapai</span></div>
+<div class="bar" style="margin:10px 0"><div id="kpiBar" style="width:0%"></div></div>
+<div id="kpiHadiah" style="background:#064e3b;padding:12px;border-radius:12px;display:none">🎉 TERCAPAI! Gaji Rp 50.000 + Bensin Rp 20.000<br><button onclick="klaim()" style="background:#f59e0b;margin-top:8px">Klaim Gaji + Bensin</button></div>
+<hr style="border-color:#334155;margin:14px 0">
+<b>💰 Akumulasi Bonus: <span id="totalBonus" style="color:#4ade80">Rp 0</span></b><br><small style="color:#94a3b8">Total Kg: <span id="totalKg">0</span> kg | Bonus = 1.000 x Kg (setelah 10 pelanggan)</small>
+<div id="listBonus" style="margin-top:10px"></div>
+</div>
+
+<div class="card"><b>📋 Order Hari Ini (Live)</b><div id="listOrder"></div></div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,addDoc,onSnapshot,query,orderBy,doc,getDoc,setDoc,updateDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyAihBZqdi4Cn5LbYagXDrffa4a6ysgVJn4",authDomain:"shaka-laundry.firebaseapp.com",projectId:"shaka-laundry",storageBucket:"shaka-laundry.firebasestorage.app",messagingSenderId:"228092735547",appId:"1:228092735547:web:6fa73a5c43dc654cfd2c1e",measurementId:"G-NNRWFP11RB"};
+const app=initializeApp(firebaseConfig);const db=getFirestore(app);
+let orders=[],fotoBase64="",pinKurir="1234",deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
+window.installApp=()=>{if(deferredPrompt)deferredPrompt.prompt();else alert("Klik titik 3 di Chrome > Add to Home Screen / Install App");};
+window.toggleBT=async()=>{
+  try{
+    const d=await navigator.bluetooth.requestDevice({acceptAllDevices:true});
+    document.getElementById('btDot').classList.add('on');
+    document.getElementById('btBtn').innerText="🟢 Printer Tersambung: "+(d.name||"Printer");
+    alert("Bluetooth tersambung ke "+d.name);
+  }catch(e){alert("Bluetooth dibatalkan / tidak didukung di browser ini. Di Chrome Android biasanya bisa.");}
+};
+window.previewFoto=(e)=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=ev=>{fotoBase64=ev.target.result;let img=document.getElementById('preview');img.src=fotoBase64;img.style.display='block';};r.readAsDataURL(f);};
+window.hitung=()=>{
+  let b=parseFloat(document.getElementById('berat').value)||0;
+  let harga=parseInt(document.getElementById('layanan').value.split("|")[1]);
+  let sub=b*harga, tot=sub+5000;
+  document.getElementById('subtotal').innerText="Rp "+sub.toLocaleString('id-ID');
+  document.getElementById('total').innerText="Rp "+tot.toLocaleString('id-ID');
+  return {sub,tot};
+};
+document.getElementById('bayar').addEventListener('change',e=>{document.getElementById('qrisBox').style.display=e.target.value==="QRIS"?"block":"none";});
+document.getElementById('layanan').addEventListener('change',hitung);
+window.loginKurir=async()=>{
+  try{let s=await getDoc(doc(db,"settings","config"));if(s.exists()&&s.data().courierPin) pinKurir=String(s.data().courierPin);}catch(e){}
+  if(document.getElementById('pin').value===pinKurir){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';}
+  else document.getElementById('loginErr').innerText="PIN Salah!";
+};
+window.klaim=async()=>{alert("Klaim dicatat! Bos akan cek di Dashboard.");};
+window.simpan=async()=>{
+  let n=nama.value,h=hp.value,a=alamat.value,l=layanan.value,b=parseFloat(berat.value),kur=namaKurir.value,bayarVal=bayar.value;
+  if(!n||!a||!b||!kur) return alert("Isi Nama, Alamat, Berat & Nama Kurir!");
+  let layananNama=l.split("|")[0],harga=parseInt(l.split("|")[1]);
+  let {sub,tot}=hitung();
+  let tgl=new Date();let noKuit="SHAKA-"+tgl.getFullYear()+String(tgl.getMonth()+1).padStart(2,'0')+String(tgl.getDate()).padStart(2,'0')+"-"+String(orders.length+1).padStart(3,'0');
+  let tglKirim=new Date(tgl);tglKirim.setDate(tglKirim.getDate()+2);
+  let data={nama:n,hp:h,alamat:a,layanan:layananNama+" - Rp "+harga.toLocaleString('id-ID')+"/kg",berat:b,fotoTimbangan:fotoBase64,subtotal:sub,biayaAntar:5000,totalBayar:tot,metodePembayaran:bayarVal,noKuitansi:noKuit,namaKurir:kur,waktu:tgl.toLocaleString('id-ID'),tanggalInput:tgl.toLocaleDateString('id-ID'),tanggalKirim:tglKirim.toLocaleDateString('id-ID'),status:"Baru",kurir:kur};
+  await addDoc(collection(db,"orders"),data);
+  document.getElementById('strukArea').innerHTML=`<div class="struk" id="strukPrint"><center><b>SHAKA LAUNDRY</b><br>Perumahan Puri Cipageran Indah 1<br>Blok A No 151<br>CS: 089526193272<br>------------------------------</center>No Kuitansi: ${noKuit}<br>Pelanggan: ${n}<br>HP: ${h}<br>Alamat: ${a}<br>Kurir: ${kur}<br>Tgl Masuk: ${data.waktu}<br>Tgl Kirim: ${data.tanggalKirim}<br>------------------------------<br>Layanan: ${layananNama}<br>Berat: ${b} kg x Rp ${harga.toLocaleString('id-ID')}<br>Subtotal: Rp ${sub.toLocaleString('id-ID')}<br>Antar Jemput: Rp 5.000<br><b>TOTAL: Rp ${tot.toLocaleString('id-ID')}</b><br>Pembayaran: ${bayarVal}<br>------------------------------<center>Terima Kasih 🙏</center></div><button onclick="window.print()" style="background:#7c3aed">🖨️ Print Struk (Bluetooth / Printer)</button>`;
+  nama.value="";hp.value="";alamat.value="";berat.value="";fotoBase64="";document.getElementById('preview').style.display='none';hitung();
+  alert("Order tersimpan! No Kuitansi: "+noKuit);
+};
+onSnapshot(query(collection(db,"orders"),orderBy("waktu","desc")),(s)=>{
+  orders=[];s.forEach(d=>{let o=d.data();o.id=d.id;orders.push(o);});
+  // KPI dihitung dari semua order (untuk demo, semua kurir digabung)
+  let totalCust=new Set(orders.map(o=>o.nama)).size;
+  let totalKg=orders.reduce((a,o)=>a+Number(o.berat||0),0);
+  let bonus=0;if(totalCust>=10){bonus=totalKg*1000;}
+  document.getElementById('kpiText').innerText=totalCust+" / 10 Pelanggan";
+  document.getElementById('kpiBar').style.width=Math.min(100,totalCust*10)+"%";
+  document.getElementById('kpiBadge').innerText=totalCust>=10?"TERCAPAI 🎉":"Belum Tercapai";
+  document.getElementById('kpiHadiah').style.display=totalCust>=10?"block":"none";
+  document.getElementById('totalBonus').innerText="Rp "+Math.round(bonus).toLocaleString('id-ID');
+  document.getElementById('totalKg').innerText=totalKg.toFixed(3);
+  document.getElementById('listBonus').innerHTML=orders.slice(0,10).map(o=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #334155"><span>${o.nama} - ${o.berat} kg</span><b>Rp ${Math.round(Number(o.berat||0)*1000).toLocaleString('id-ID')}</b></div>`).join('');
+  let today=new Date().toLocaleDateString('id-ID');
+  document.getElementById('listOrder').innerHTML=orders.filter(o=>o.tanggalInput===today).map(o=>`<div class="card" style="background:#0f172a"><b>${o.nama}</b> - ${o.berat} kg<br><small>${o.alamat} | ${o.noKuitansi}<br>Total: Rp ${Number(o.totalBayar||0).toLocaleString('id-ID')} | Kirim: ${o.tanggalKirim}</small></div>`).join('')||"Belum ada order hari ini";
+});
+</script></body></html>
