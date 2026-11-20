@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laundry Hunter - Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif}
+body{background:#0f172a;color:#fff;padding-bottom:85px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px}
+.logo{background:#10b981;padding:10px 14px;border-radius:12px;font-size:22px}
+h1{font-size:22px;padding:0 16px 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px}
+.card{background:#1e293b;border-radius:16px;padding:16px;min-height:130px}
+.card .icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.green{background:#10b981}.blue{background:#3b82f6}.orange{background:#f59e0b}.purple{background:#a855f7}.red{background:#ef4444}.teal{background:#14b8a6}
+.card b{font-size:20px;display:block}.card span{color:#94a3b8;font-size:14px}.card small{color:#64748b;font-size:12px}
+.box{background:#1e293b;border-radius:16px;padding:16px;margin:16px}
+.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #334155;gap:10px}
+.row:last-child{border:none}
+.badge{background:#064e3b;color:#34d399;padding:4px 10px;border-radius:20px;font-size:12px;white-space:nowrap}
+input{width:100%;padding:14px;border-radius:12px;border:none;background:#1e293b;color:#fff;margin:0 0 12px;outline:none}
+.tabs{display:flex;gap:8px;padding:0 16px}
+.tabs button{flex:1;padding:10px;border-radius:20px;border:none;background:#1e293b;color:#94a3b8}
+.tabs button.active{background:#0e7490;color:#fff}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#1e293b;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #334155}
+.bottom div{text-align:center;font-size:11px;color:#64748b;cursor:pointer}
+.bottom div.active{color:#10b981}
+.bottom span{font-size:22px;display:block}
+.page{display:none}.page.active{display:block}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:13px;margin-top:12px}
+.cal div{padding:10px 0;border-radius:10px;background:#0f172a}
+.cal div.has{background:#854d0e;border:1px solid #eab308}
+.prod{display:flex;justify-content:space-between;align-items:center}
+.btn{background:#7c3aed;color:#fff;border:none;padding:8px 16px;border-radius:20px}
+.btnDel{background:#ef4444;color:#fff;border:none;padding:6px 12px;border-radius:20px;font-size:12px}
+a.btnMain{display:block;background:#10b981;color:#fff;text-align:center;padding:12px;margin:0 16px 12px;border-radius:12px;text-decoration:none;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="top">
+<div style="display:flex;gap:10px;align-items:center"><div class="logo">🧺</div><b>Laundry Hunter</b></div>
+<div>🏠</div>
+</div>
+<a class="btnMain" href="index.html">🧺 ← Balik ke Halaman Order</a>
+
+<!-- BERANDA -->
+<div id="p-beranda" class="page active">
+<h1>Ringkasan Dashboard</h1>
+<div class="grid">
+<div class="card"><div class="icon green">$</div><b id="omset">Rp 0</b><span>Total Omset</span><br><small id="omsetSub">0 pembayaran</small></div>
+<div class="card"><div class="icon blue">👥</div><b id="pelanggan">0</b><span>Pelanggan Aktif</span><br><small id="pelangganSub">0 pelanggan</small></div>
+<div class="card"><div class="icon orange">📅</div><b id="hariIni">0</b><span>Order Hari Ini</span><br><small id="hariIniSub">0 order</small></div>
+<div class="card"><div class="icon purple">🧺</div><b id="totalKilo">0 kg</b><span>Total Kilo</span><br><small>Total cucian masuk</small></div>
+<div class="card"><div class="icon red">⏳</div><b id="antri">0</b><span>Order Antri</span><br><small>Belum selesai</small></div>
+<div class="card"><div class="icon teal">✅</div><b id="selesai">0</b><span>Order Selesai</span><br><small>Total selesai</small></div>
+</div>
+<div class="box"><b>Pelanggan Terbaru</b><div id="terbaru"></div></div>
+<div class="box"><b>Order Hari Ini</b><div id="jadwalHariIni"></div></div>
+</div>
+
+<!-- OMSET -->
+<div id="p-omset" class="page"><h1>Omset</h1>
+<div class="box"><b style="font-size:28px" id="omset2">Rp 0</b><p style="color:#94a3b8">Total semua order</p></div>
+<div class="box"><b>Riwayat Pembayaran</b><div id="listOmset"></div></div></div>
+
+<!-- PELANGGAN -->
+<div id="p-pelanggan" class="page"><h1>Data Pelanggan</h1>
+<div style="padding:0 16px"><input id="cari" placeholder="🔍 Cari nama atau telepon..." oninput="render()"></div>
+<div id="listPelanggan"></div></div>
+
+<!-- KALENDER -->
+<div id="p-kalender" class="page"><h1>Kalender Order</h1>
+<div class="box"><b id="bulanLabel">November 2026</b><div class="cal" id="kalender"></div><p style="color:#94a3b8;margin-top:12px">🟡 Ada order</p></div>
+<div class="box"><b>Detail Tanggal</b><div id="detailTanggal"><p style="color:#94a3b8;margin-top:6px">Klik tanggal yang kuning di kalender</p></div></div></div>
+
+<!-- PRODUK -->
+<div id="p-produk" class="page"><div style="display:flex;justify-content:space-between;padding:0 16px 16px"><h1>Produk & Layanan</h1></div>
+<div id="listProduk"></div></div>
+
+<div class="bottom">
+<div class="active" onclick="show('beranda',this)"><span>⊞</span>Beranda</div>
+<div onclick="show('omset',this)"><span>$</span>Omset</div>
+<div onclick="show('pelanggan',this)"><span>👥</span>Pelanggan</div>
+<div onclick="show('kalender',this)"><span>📅</span>Kalender</div>
+<div onclick="show('produk',this)"><span>📦</span>Produk</div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,onSnapshot,query,orderBy,deleteDoc,doc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyAihBZqdi4Cn5LbYagXDrffa4a6ysgVJn4",authDomain:"shaka-laundry.firebaseapp.com",projectId:"shaka-laundry",storageBucket:"shaka-laundry.firebasestorage.app",messagingSenderId:"228092735547",appId:"1:228092735547:web:6fa73a5c43dc654cfd2c1e",measurementId:"G-NNRWFP11RB"};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+let orders=[];
+let produk=[
+  {nama:"Cuci Kering", desc:"Cuci kering wangi", harga:7000, kat:"Kiloan"},
+  {nama:"Cuci Setrika", desc:"Cuci + setrika rapi", harga:10000, kat:"Kiloan"},
+  {nama:"Setrika Saja", desc:"Setrika saja", harga:5000, kat:"Kiloan"},
+  {nama:"Cuci Express 1 Hari", desc:"Selesai 1 hari", harga:15000, kat:"Express"},
+];
+window.show=(p,el)=>{
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('p-'+p).classList.add('active');
+  document.querySelectorAll('.bottom div').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+};
+function fmt(n){ return "Rp "+Number(n||0).toLocaleString('id-ID'); }
+function getHarga(layanan, berat){
+  // layanan = "Cuci Kering - Rp 7000/kg" -> ambil 7000
+  let m = (layanan||"").match(/(\d[\d\.]*)/);
+  let perKg = 7000;
+  if(m){ let nums = (layanan.match(/[\d\.]+/g)||[]); if(nums.length>=2) perKg = parseInt(nums[1].replace(/\./g,'')); }
+  return perKg * Number(berat||0);
+}
+function getTgl(waktu){
+  // waktu = "20/11/2026, 19.00.00" -> ambil tanggalnya
+  if(!waktu) return "";
+  return waktu.split(",")[0].trim();
+}
+window.render=()=>{
+  let q=(document.getElementById('cari').value||"").toLowerCase();
+  let total=0, kilo=0, antri=0, selesai=0, hariIniCount=0;
+  let today=new Date().toLocaleDateString('id-ID');
+  let pelangganMap={};
+  orders.forEach(o=>{
+    let harga=getHarga(o.layanan,o.berat);
+    total+=harga; kilo+=Number(o.berat||0);
+    if(o.status==="Selesai") selesai++; else antri++;
+    let tgl=getTgl(o.waktu);
+    if(tgl===today) hariIniCount++;
+    if(o.nama) pelangganMap[o.nama+"|"+(o.hp||"")]=o;
+  });
+  document.getElementById('omset').innerText=fmt(total);
+  document.getElementById('omset2').innerText=fmt(total);
+  document.getElementById('omsetSub').innerText=orders.length+" pembayaran diterima";
+  document.getElementById('pelanggan').innerText=Object.keys(pelangganMap).length;
+  document.getElementById('pelangganSub').innerText=Object.keys(pelangganMap).length+" pelanggan";
+  document.getElementById('hariIni').innerText=hariIniCount;
+  document.getElementById('hariIniSub').innerText=hariIniCount+" order";
+  document.getElementById('totalKilo').innerText=kilo+" kg";
+  document.getElementById('antri').innerText=antri;
+  document.getElementById('selesai').innerText=selesai;
+
+  let terbaru=Object.values(pelangganMap).slice(-5).reverse();
+  document.getElementById('terbaru').innerHTML=terbaru.map(o=>`<div class="row"><div><b>${o.nama}</b><br><small style="color:#94a3b8">${o.hp||""}</small></div><span class="badge">Aktif</span></div>`).join('')||"Belum ada pelanggan";
+  let hariIniList=orders.filter(o=>getTgl(o.waktu)===today);
+  document.getElementById('jadwalHariIni').innerHTML=hariIniList.map(o=>`<div class="row"><div><b>${o.nama} - ${o.berat} kg</b><br><small>${o.layanan} - ${fmt(getHarga(o.layanan,o.berat))}</small></div><span class="badge">Aktif</span></div>`).join('')||"<p style='color:#94a3b8;margin-top:8px'>Tidak ada order hari ini</p>";
+  document.getElementById('listOmset').innerHTML=orders.map(o=>`<div class="row"><div><b>${o.nama}</b><br><small>${o.waktu||""} - ${o.berat} kg</small></div><b>${fmt(getHarga(o.layanan,o.berat))}</b></div>`).join('')||"Belum ada omset";
+  let filt=Object.values(pelangganMap).filter(o=>(o.nama+" "+(o.hp||"")).toLowerCase().includes(q));
+  document.getElementById('listPelanggan').innerHTML=filt.map(o=>{
+    let initial=(o.nama||"?")[0].toUpperCase();
+    return `<div class="box"><div class="prod"><div style="width:42px;height:42px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:20px">${initial}</div><span class="badge">Aktif</span></div><b style="display:block;margin-top:10px">${o.nama}</b><small style="color:#94a3b8">${o.hp||""}</small><p style="color:#94a3b8;font-size:13px;margin-top:8px">Order: ${orders.filter(x=>x.nama===o.nama).length}x<br>Terakhir: ${o.waktu||""}</p></div>`
+  }).join('')||"<p style='padding:0 16px;color:#94a3b8'>Tidak ada pelanggan</p>";
+
+  let now=new Date(); let y=now.getFullYear(), m=now.getMonth();
+  document.getElementById('bulanLabel').innerText=now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+  let days=new Date(y,m+1,0).getDate();
+  let html=["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(d=>`<div style="background:none;color:#94a3b8">${d}</div>`).join('');
+  let counts={};
+  orders.forEach(o=>{ let parts=getTgl(o.waktu).split("/"); if(parts.length===3){ let d=parseInt(parts[0]); let mo=parseInt(parts[1])-1; if(mo===m) counts[d]=(counts[d]||0)+1; }});
+  for(let d=1;d<=days;d++){ html+=`<div class="${counts[d]?'has':''}" onclick="document.getElementById('detailTanggal').innerHTML='<b>${d} - '+(counts[d]||0)+' order</b>'">${d}${counts[d]?`<br><small>${counts[d]}</small>`:""}</div>`; }
+  document.getElementById('kalender').innerHTML=html;
+  document.getElementById('listProduk').innerHTML=produk.map(p=>`<div class="box"><div class="prod"><div style="width:42px;height:42px;background:#a855f7;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📦</div></div><b style="display:block;margin-top:10px">${p.nama}</b><small style="color:#94a3b8">${p.desc}</small><div class="prod" style="margin-top:10px"><b style="color:#c084fc">${fmt(p.harga)}/kg</b><span class="badge">Stok: 100</span></div><small style="color:#94a3b8">Kategori: ${p.kat}</small></div>`).join('');
+};
+window.hapus=async(id)=>{ if(confirm("Hapus order ini?")) await deleteDoc(doc(db,"orders",id)); };
+onSnapshot(query(collection(db,"orders"),orderBy("waktu","desc")),(s)=>{
+  orders=[];
+  s.forEach(d=>{ let o=d.data(); o.id=d.id; orders.push(o); });
+  render();
+});
+render();
+</script>
+</body>
+  </html>
