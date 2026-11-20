@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laundry Hunter</title><style>body{font-family:sans-serif;background:#0f172a;color:#fff;padding:20px;max-width:500px;margin:auto}h1{text-align:center}input,select,button{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:none;font-size:16px}button{background:#22c55e;font-weight:bold} .card{background:#1e293b;padding:15px;border-radius:12px;margin:10px 0}small{color:#94a3b8}</style></head><body>
+<h1>🧺 Laundry Hunter</h1><p style="text-align:center"><small>Order Laundry Kiloan</small></p>
+<input id="nama" placeholder="Nama Pelanggan">
+<input id="hp" placeholder="No HP / WA">
+<select id="layanan"><option value="Cuci Kering - Rp 7000/kg">Cuci Kering - Rp 7000/kg</option><option value="Cuci Setrika - Rp 10000/kg">Cuci Setrika - Rp 10000/kg</option><option value="Setrika Saja - Rp 5000/kg">Setrika Saja - Rp 5000/kg</option></select>
+<input id="berat" type="number" placeholder="Berat (kg)">
+<button onclick="simpan()">+ Tambah Order</button>
+<div id="list"></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,addDoc,onSnapshot,query,orderBy,deleteDoc,doc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig={apiKey:"ISI_APIKEY_LU",authDomain:"ISI_AUTHDOMAIN_LU",projectId:"ISI_PROJECTID_LU",storageBucket:"ISI_STORAGEBUCKET_LU",messagingSenderId:"ISI_SENDERID_LU",appId:"ISI_APPID_LU"};
+const app=initializeApp(firebaseConfig);const db=getFirestore(app);
+window.simpan=async()=>{
+let n=nama.value,h=hp.value,l=layanan.value,b=berat.value;
+if(!n||!b) return alert("Isi nama & berat!");
+await addDoc(collection(db,"orders"),{nama:n,hp:h,layanan:l,berat:b,waktu:new Date().toLocaleString('id-ID'),status:"Baru"});
+nama.value="";hp.value="";berat.value="";};
+onSnapshot(query(collection(db,"orders"),orderBy("waktu","desc")),(s)=>{
+list.innerHTML="";s.forEach(d=>{let o=d.data();list.innerHTML+=`<div class="card"><b>${o.nama}</b> - ${o.berat} kg<br><small>${o.layanan} | ${o.waktu}</small><br><small>${o.hp}</small><br><button onclick="hapus('${d.id}')" style="background:#ef4444;margin-top:8px">Hapus / Selesai</button></div>`})});
+window.hapus=async(id)=>{await deleteDoc(doc(db,"orders",id))};
+</script></body></html>
