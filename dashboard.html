@@ -39,26 +39,11 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer}
 .nav button span{font-size:20px} .nav button.on{color:#2ecc71}
 .tab{display:none} .tab.on{display:block}
 .kurir-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2e4d36;padding:12px 0}
-#loginDash{position:fixed;inset:0;background:#0b1a12;display:flex;align-items:center;justify-content:center;padding:20px;z-index:200}
-#loginDash .card{width:100%;max-width:360px;text-align:center;border-color:#2ecc71}
 </style></head><body>
 
-<div id="loginDash">
-  <div class="card">
-    <div style="font-size:40px">👑🌿</div>
-    <h2 style="margin:8px 0">SHAKA LAUNDRY</h2>
-    <p class="small">Dashboard Bos - Masukkan PIN 6 Angka</p>
-    <input id="pinDash" type="password" inputmode="numeric" maxlength="6" placeholder="PIN 6 Angka" style="text-align:center;font-size:26px;letter-spacing:8px">
-    <button class="btn-main" onclick="loginDash()">MASUK DASHBOARD</button>
-    <p class="small">Default: 123456<br>Kalo pernah ganti PIN, pakai PIN baru lu.</p>
-    <button onclick="resetPinDash()" style="width:100%;padding:12px;background:#2e4d36;color:#ffcc6b;margin-top:8px">🔄 RESET PIN JADI 123456</button>
-    <p class="small" id="statusLogin" style="color:#ffcc6b"></p>
-  </div>
-</div>
-
 <div class="top">
-  <div style="display:flex;gap:10px;align-items:center"><div class="logo">🌿</div><div><b>Shaka Laundry</b><br><span class="small">Dashboard Bos</span></div></div>
-  <div style="display:flex;gap:6px"><button onclick="loadData()" style="width:auto;background:#1a2e22;color:#fff;padding:10px 14px">🔄</button><button onclick="keluarDash()" style="width:auto;background:transparent;color:#7a9a80;padding:10px">Keluar ↩</button></div>
+  <div style="display:flex;gap:10px;align-items:center"><div class="logo">🌿</div><div><b>Shaka Laundry</b><br><span class="small">Dashboard Bos - TANPA KUNCI</span></div></div>
+  <button onclick="loadData()" style="width:auto;background:#1a2e22;color:#fff;padding:10px 14px">🔄</button>
 </div>
 
 <div id="tab-beranda" class="tab on">
@@ -73,21 +58,14 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer}
   </div>
 
   <div class="card" style="border-color:#2ecc71">
-    <b>⚙️ Pengaturan - Password</b>
-    <p class="small">Ganti password dari sini, langsung tersimpan di HP ini.</p>
+    <b>⚙️ Pengaturan - Password Kurir (4 Angka)</b>
+    <p class="small">Ganti PIN kurir dari sini. PIN Dashboard untuk sementara gw matiin dulu biar lu bisa masuk.</p>
     <hr style="border-color:#2e4d36">
-    <b style="font-size:14px">🔒 Password Dashboard Bos (6 Angka)</b>
-    <input id="setPinDash" type="password" inputmode="numeric" maxlength="6" placeholder="PIN Dashboard Baru - 6 Angka">
-    <input id="setPinDash2" type="password" inputmode="numeric" maxlength="6" placeholder="Ulangi PIN Dashboard Baru">
-    <button class="btn-main" onclick="gantiPinDash()">💾 GANTI PIN DASHBOARD</button>
-    <p class="small">PIN sekarang: <b style="color:#2ecc71">••••••</b></p>
-    <hr style="border-color:#2e4d36">
-    <b style="font-size:14px">🛵 Password Kurir (4 Angka)</b>
     <select id="pilihKurirPass"><option value="">-- Pilih Kurir --</option></select>
     <input id="setPinKurir" type="password" inputmode="numeric" maxlength="4" placeholder="PIN Kurir Baru - 4 Angka">
     <input id="setPinKurir2" type="password" inputmode="numeric" maxlength="4" placeholder="Ulangi PIN Kurir Baru">
     <button class="btn-main" onclick="gantiPinKurir()" style="background:#3b9eff;color:#fff">💾 GANTI PIN KURIR</button>
-    <p class="small">Kurir login di kurir.html pakai PIN 4 angka ini. Default Yhanuar: 1234</p>
+    <p class="small">Default Yhanuar: 1234</p>
   </div>
 
   <div class="card"><b>🔥 Order Terbaru</b><div id="listTerbaru" style="margin-top:8px">Memuat...</div></div>
@@ -97,7 +75,6 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer}
   <h2>Omset Perusahaan</h2>
   <div class="kartu g-green" style="margin-bottom:12px"><div class="icon" style="font-size:26px">$</div><b id="oTotal" style="font-size:22px">Rp 0</b><div class="sub">Total Diterima</div></div>
   <div class="kartu g-blue" style="margin-bottom:12px"><div class="icon">✓</div><b id="oLunas">0</b><div class="sub">Pembayaran Diterima</div></div>
-  <div class="kartu g-orange" style="margin-bottom:12px"><div class="icon">🕐</div><b>0</b><div class="sub">Belum Bayar</div></div>
   <div class="card"><div style="display:flex;justify-content:space-between"><b>Detail Pembayaran (<span id="oCount">0</span>)</b><span style="color:#2ecc71;cursor:pointer" onclick="toggleDetailOmset()">Tampilkan</span></div><div id="detailOmset" style="display:none;margin-top:10px"></div></div>
 </div>
 
@@ -150,42 +127,7 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer}
 var FB_URL="https://shaka-laundry-default-rtdb.asia-southeast1.firebasedatabase.app";
 var orders=[], kurirs=[], filterPelanggan='semua', editKurirId=null;
 var calTahun=new Date().getFullYear(), calBulan=new Date().getMonth(), tanggalPilih=null;
-function getPinDash(){ return localStorage.getItem('shaka_pin_dash') || '123456'; }
-window.addEventListener('DOMContentLoaded', function(){
-  if(localStorage.getItem('shaka_dash_login')==='1'){
-    document.getElementById('loginDash').style.display='none';
-  }
-  loadData();
-});
-function loginDash(){
-  var pin=document.getElementById('pinDash').value.trim();
-  if(!pin){ document.getElementById('statusLogin').innerText='Isi PIN dulu!'; return; }
-  var pinBenar = getPinDash();
-  // PIN Default 123456 SELALU BISA MASUK - biar gak ke-lock
-  if(pin===pinBenar || pin==='123456'){
-    localStorage.setItem('shaka_dash_login','1');
-    document.getElementById('loginDash').style.display='none';
-    document.getElementById('statusLogin').innerText='';
-  } else {
-    document.getElementById('statusLogin').innerText='❌ PIN salah! Coba 123456 atau klik RESET di bawah.';
-  }
-}
-function resetPinDash(){
-  localStorage.setItem('shaka_pin_dash','123456');
-  localStorage.removeItem('shaka_dash_login');
-  document.getElementById('pinDash').value='123456';
-  document.getElementById('statusLogin').innerText='✅ PIN direset jadi 123456. Klik MASUK DASHBOARD!';
-}
-function keluarDash(){ localStorage.removeItem('shaka_dash_login'); location.reload(); }
-function gantiPinDash(){
-  var p1=document.getElementById('setPinDash').value.trim();
-  var p2=document.getElementById('setPinDash2').value.trim();
-  if(p1.length!==6){ alert('PIN Dashboard harus 6 angka!'); return; }
-  if(p1!==p2){ alert('PIN tidak sama! Cek lagi ulangi PIN-nya.'); return; }
-  localStorage.setItem('shaka_pin_dash', p1);
-  document.getElementById('setPinDash').value=''; document.getElementById('setPinDash2').value='';
-  alert('✅ PIN Dashboard berhasil diganti jadi '+p1+'\nIngat PIN baru ini! PIN 123456 tetap bisa dipakai darurat.');
-}
+loadData();
 async function gantiPinKurir(){
   var id=document.getElementById('pilihKurirPass').value;
   var p1=document.getElementById('setPinKurir').value.trim();
@@ -269,4 +211,36 @@ function renderSemua(){
   renderKalender(); renderPelanggan();
 }
 function cardOrder(o){
-  v
+  var isTF=o.metodeBayar==='TRANSFER SEABANK';
+  var badge=isTF?'<span class="badge badge-tf">🏦 TF SEABANK</span>':'<span class="badge badge-lunas">✅ CASH - LUNAS</span>';
+  var waNum=String(o.wa||'').replace(/^0/,'62').replace(/[^0-9]/g,'');
+  var fotoBtn=o.foto?'<button class="icon-btn eye" onclick="toggleFoto(\''+o.id+'\',this)">👁️</button>':'';
+  var antar=tglAntar(o);
+  return '<div class="order"><div style="display:flex;justify-content:space-between;gap:8px"><div style="flex:1"><b>'+o.nama+'</b> <span class="small">'+(o.noKuitansi||'')+'</span><br><span class="small">'+o.kg+' kg • '+o.paket+' • <b style="color:#fff">Rp '+(o.total||0).toLocaleString('id-ID')+'</b><br>Alamat: '+(o.alamat||'')+'<br>Masuk: '+(o.tanggal||'')+'<br>📅 <b style="color:#ffcc6b">Antar: '+fmtTanggal(antar)+'</b></span><br>'+badge+' <span class="small">• Kurir: '+(o.kurir||'-')+'</span></div><div style="display:flex;gap:6px;flex-direction:column">'+fotoBtn+'<button class="icon-btn del" onclick="hapusOrder(\''+o.id+'\')">🗑️</button></div></div><div id="foto-'+o.id+'" class="foto-wrap">'+(o.foto?'<img src="'+o.foto+'">':'')+'</div><a href="https://wa.me/'+waNum+'" target="_blank"><button class="wa">💬 Chat WA - '+o.wa+'</button></a></div>';
+}
+function toggleDetailOmset(){ var d=document.getElementById('detailOmset'); d.style.display=d.style.display==='none'?'block':'none'; }
+function setFilterPelanggan(f){ filterPelanggan=f; document.getElementById('fSemua').className=f==='semua'?'on':''; document.getElementById('fAktif').className=f==='aktif'?'on':''; document.getElementById('fBelum').className=f==='belum'?'on':''; renderPelanggan(); }
+function renderPelanggan(){
+  var q=(document.getElementById('cariPelanggan').value||'').toLowerCase();
+  var map={};
+  orders.forEach(function(o){
+    var key=o.nama+'|'+o.wa;
+    if(!map[key]) map[key]={nama:o.nama,wa:o.wa,alamat:o.alamat,jml:0,daftar:o.tanggal,last:o.timestamp||0};
+    map[key].jml++; if((o.timestamp||0)>map[key].last) map[key].last=o.timestamp||0;
+  });
+  var arr=Object.values(map).filter(function(p){ return (!q||p.nama.toLowerCase().includes(q)||String(p.wa).includes(q)) && (filterPelanggan==='semua'||(filterPelanggan==='aktif'&&p.jml>0)); });
+  var el=document.getElementById('listPelanggan');
+  if(!arr.length) el.innerHTML='<div class="card"><p class="small">Belum ada pelanggan. Pelanggan muncul otomatis dari order kurir.</p></div>';
+  else el.innerHTML=arr.map(function(p){
+    return '<div class="card"><div style="display:flex;justify-content:space-between"><div style="display:flex;gap:10px"><div class="avatar" style="background:'+warnaAvatar(p.nama)+'">'+p.nama.charAt(0).toUpperCase()+'</div><div><b>'+p.nama+'</b><br><span class="small">'+p.wa+'</span></div></div><span class="badge badge-aktif">Aktif</span></div><p class="small" style="margin:10px 0 0">Alamat: '+(p.alamat||'-')+'<br>Pembayaran: '+p.jml+'x | Jadwal: '+p.jml+'x<br>Daftar: '+(p.daftar||'-')+'</p></div>';
+  }).join('');
+}
+function geserBulan(n){ calBulan+=n; if(calBulan>11){ calBulan=0; calTahun++; } if(calBulan<0){ calBulan=11; calTahun--; } tanggalPilih=null; renderKalender(); }
+function renderKalender(){
+  var namaBulan=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('judulBulan').innerText=namaBulan[calBulan]+' '+calTahun;
+  var pertama=new Date(calTahun,calBulan,1).getDay();
+  var jmlHari=new Date(calTahun,calBulan+1,0).getDate();
+  var hitung={};
+  orders.forEach(function(o){ var k=fmtKey(tglAntar(o)); hitung[k]=(hitung[k]||0)+1; });
+  var html=
