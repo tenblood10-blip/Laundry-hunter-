@@ -24,9 +24,13 @@ h2,h3{color:#fff}
 #login{position:fixed;inset:0;background:#0f1f14;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99}
 #login .card{background:#1a2e22;border:1px solid #2ecc71}
 .kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px} .kpi .card{margin:0;text-align:center}
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:#2ecc71;color:#06281a;padding:16px 20px;border-radius:14px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:999;transition:.4s;text-align:center;width:90%;max-width:360px}
+#toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
+
+<div id="toast">✅ DATA BERHASIL DISIMPAN<br><span id="toastSub" style="font-weight:400;font-size:13px"></span></div>
 
 <div id="login">
   <div class="card" style="width:100%;max-width:360px;text-align:center">
@@ -72,13 +76,13 @@ h2,h3{color:#fff}
   <label><b>💳 Pembayaran</b></label>
   <div class="bayar">
     <label id="lbTF" class="active" onclick="pilihBayar('TRANSFER SEABANK')"><input type="radio" name="bayar" value="TRANSFER SEABANK" checked>🏦 TF SEABANK</label>
-    <label id="lbManual" onclick="pilihBayar('MANUAL')"><input type="radio" name="bayar" value="MANUAL">💵 MANUAL / CASH</label>
+    <label id="lbManual" onclick="pilihBayar('CASH - LUNAS')"><input type="radio" name="bayar" value="CASH - LUNAS">💵 CASH - LUNAS</label>
   </div>
   <div id="infoBayar" class="bank" style="background:#06281a;border:1px solid #2ecc71">
     Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>
   </div>
   <div style="background:#06281a;color:#fff;padding:12px;border-radius:12px;text-align:center;margin-top:10px;border:1px solid #2ecc71">No. Kuitansi: <b id="noKuitansi" style="color:#2ecc71">SHAKA-...</b></div>
-  <button class="btn-blue" onclick="simpan()">💾 SIMPAN ORDER & PRINT STRUK BLUETOOTH</button>
+  <button class="btn-blue" onclick="simpan()" style="margin-top:10px">💾 SIMPAN ORDER & PRINT STRUK BLUETOOTH</button>
 </div>
 
 <div class="card"><h3>📦 Order Hari Ini (Live)</h3><div id="list">Memuat...</div></div>
@@ -101,21 +105,17 @@ h2,h3{color:#fff}
 </div>
 
 <script>
-// ===== LOGIN DIPISAH - TANPA FIREBASE, PASTI JALAN =====
 var daftarKurir = [{nama:'Yhanuar', pin:'1234'}];
 var kurirSaya = '';
 function login(){
   var pin = document.getElementById('pin').value.trim();
   var nama = document.getElementById('namaKurirLogin').value;
   if(!pin){ alert('Isi PIN dulu!'); return; }
-  // DEFAULT SELALU TEMBUS
-  if(nama==='Yhanuar' && pin==='1234'){
-    masuk(nama); return;
-  }
+  if(nama==='Yhanuar' && pin==='1234'){ masuk(nama); return; }
   var ketemu = null;
   for(var i=0;i<daftarKurir.length;i++){ if(daftarKurir[i].nama===nama) ketemu=daftarKurir[i]; }
   var pinBenar = ketemu ? String(ketemu.pin) : '1234';
-  if(pin !== pinBenar){ alert('PIN salah untuk '+nama+'! Lu ketik: '+pin+' | Coba 1234'); return; }
+  if(pin !== pinBenar){ alert('PIN salah untuk '+nama+'!'); return; }
   masuk(nama);
 }
 function masuk(nama){
@@ -125,6 +125,28 @@ function masuk(nama){
   document.getElementById('kurir').value=nama;
 }
 function gps(){ navigator.geolocation.getCurrentPosition(function(p){ document.getElementById('alamat').value += ' | Lokasi: https://maps.google.com/?q='+p.coords.latitude+','+p.coords.longitude; },function(){alert('GPS ditolak')}); }
+// SUARA SUKSES + TOAST PROFESIONAL
+function suksesSound(){
+  try{
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [523,659,784].forEach(function(f,i){
+      var o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=f; o.type='sine';
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + i*0.15);
+      g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + i*0.15 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i*0.15 + 0.3);
+      o.start(ctx.currentTime + i*0.15); o.stop(ctx.currentTime + i*0.15 + 0.35);
+    });
+  }catch(e){}
+  try{ if(navigator.vibrate) navigator.vibrate([100,50,100]); }catch(e){}
+}
+function showToast(noKuitansi, total){
+  var t=document.getElementById('toast');
+  document.getElementById('toastSub').innerHTML = noKuitansi + ' | Total Rp ' + total.toLocaleString('id-ID') + '<br>Sudah terkirim ke Dashboard Bos';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
 </script>
 
 <script type="module">
@@ -157,10 +179,10 @@ window.previewFoto = (e)=>{ let r=new FileReader(); r.onload=()=>{ fotoData=r.re
 window.pilihBayar = (v)=>{
   metodeBayar=v;
   document.getElementById('lbTF').className=v==='TRANSFER SEABANK'?'active':'';
-  document.getElementById('lbManual').className=v==='MANUAL'?'active':'';
+  document.getElementById('lbManual').className=v==='CASH - LUNAS'?'active':'';
   let info=document.getElementById('infoBayar');
   if(v==='TRANSFER SEABANK'){ info.style.background='#06281a'; info.innerHTML='Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>'; }
-  else{ info.style.background='#7a4a00'; info.innerHTML='💵 TAGIH CASH KE PELANGGAN<br><b style="font-size:22px" id="cashTotal">Rp 0</b><br><small>Minta uang tunai, foto uang / kuitansi</small>'; hitung(); }
+  else{ info.style.background='#14532d'; info.innerHTML='✅ PEMBAYARAN TUNAI - LUNAS<br><b style="font-size:22px" id="cashTotal">Rp 0</b><br><small>Pembayaran diterima di tempat, sudah lunas</small>'; hitung(); }
 }
 function buatKuitansi(){ let d=new Date(); let tgl=d.getFullYear()+''+String(d.getMonth()+1).padStart(2,'0')+''+String(d.getDate()).padStart(2,'0'); return 'SHAKA-'+tgl+'-'+String(orders.length+1).padStart(4,'0'); }
 window.hitung = ()=>{
@@ -177,9 +199,10 @@ window.simpan = async ()=>{
   let nama=document.getElementById('nama').value, wa=document.getElementById('wa').value, alamat=document.getElementById('alamat').value, kurir=document.getElementById('kurir').value;
   if(!nama||!wa||!alamat||!h.kg) return alert('Lengkapi nama, WA, alamat & berat!');
   let noKuitansi=buatKuitansi();
-  let order={nama,wa,alamat,kurir,kg:h.kg,paket:h.paket,hargaPerKg:h.harga,totalLaundry:h.laundry,antarJemput:5000,total:h.total,metodeBayar, noKuitansi, foto:fotoData, tanggal:new Date().toLocaleString('id-ID'), status:'Menunggu Dijemput', timestamp:Date.now()};
+  let order={nama,wa,alamat,kurir,kg:h.kg,paket:h.paket,hargaPerKg:h.harga,totalLaundry:h.laundry,antarJemput:5000,total:h.total,metodeBayar, noKuitansi, foto:fotoData, tanggal:new Date().toLocaleString('id-ID'), status:'LUNAS - Menunggu Dijemput', timestamp:Date.now()};
   await push(ref(db,'orders'), order);
-  alert('Order tersimpan! No: '+noKuitansi+' - Langsung masuk ke Dashboard Bos!');
+  suksesSound();
+  showToast(noKuitansi, h.total);
   printStruk(order);
   document.getElementById('nama').value=''; document.getElementById('wa').value=''; document.getElementById('alamat').value=''; document.getElementById('kg').value=''; fotoData=''; document.getElementById('imgFoto').style.display='none'; hitung();
 }
@@ -193,8 +216,8 @@ window.toggleBT = async ()=>{
   }catch(e){ alert('Bluetooth gagal / dibatalkan. Pakai Chrome di HP Android & nyalakan bluetooth printer.'); }
 }
 window.printStruk = async (o)=>{
-  let bayarTxt = o.metodeBayar==='TRANSFER SEABANK' ? 'TF SEABANK\nPT. BANK SEABANK INDONESIA\n901195106698\na.n YHANUAR TRIWIBOWO' : 'MANUAL / CASH\nTagih Cash Ke Pelanggan';
-  let struk=`SHAKA LAUNDRY\nPerumahan Puri Cipageran Indah 1 Blok A No. 151\n--------------------------------\nNo. Kuitansi: ${o.noKuitansi}\nTanggal: ${o.tanggal}\nKurir: ${o.kurir}\nPelanggan: ${o.nama}\nAlamat: ${o.alamat}\nBerat: ${o.kg} kg\nPaket: ${o.paket}\nTotal Laundry: Rp ${o.totalLaundry.toLocaleString('id-ID')}\nAntar Jemput: Rp 5.000\nTOTAL BAYAR: Rp ${o.total.toLocaleString('id-ID')}\nBayar: ${bayarTxt}\n--------------------------------\nCustomer Service: 089526193272\nTerima kasih sudah laundry di Shaka!\n\n\n`;
+  let bayarTxt = o.metodeBayar==='TRANSFER SEABANK' ? 'TF SEABANK\nPT. BANK SEABANK INDONESIA\n901195106698\na.n YHANUAR TRIWIBOWO' : 'CASH - LUNAS\nPembayaran Tunai Diterima';
+  let struk=`SHAKA LAUNDRY\nPerumahan Puri Cipageran Indah 1 Blok A No. 151\n--------------------------------\nNo. Kuitansi: ${o.noKuitansi}\nTanggal: ${o.tanggal}\nKurir: ${o.kurir}\nPelanggan: ${o.nama}\nAlamat: ${o.alamat}\nBerat: ${o.kg} kg\nPaket: ${o.paket}\nTotal Laundry: Rp ${o.totalLaundry.toLocaleString('id-ID')}\nAntar Jemput: Rp 5.000\nTOTAL BAYAR: Rp ${o.total.toLocaleString('id-ID')}\nBayar: ${bayarTxt}\nStatus: LUNAS\n--------------------------------\nCustomer Service: 089526193272\nTerima kasih sudah laundry di Shaka!\n\n\n`;
   if(!bluetoothDevice){
     let mau = confirm('Printer Bluetooth belum tersambung!\n\nSambungkan dulu?\n\nOK = Sambungkan Bluetooth\nCancel = Print via browser (darurat)');
     if(mau){ await toggleBT(); }
@@ -218,11 +241,11 @@ onValue(ref(db,'orders'), (snap)=>{
   if(!orders.length) list.innerHTML='Belum ada order.';
   else list.innerHTML=orders.slice().reverse().map(o=>{
     let isTF = o.metodeBayar==='TRANSFER SEABANK';
-    return `<div style="border-bottom:1px solid #2e4d36;padding:10px 0"><b>${o.nama}</b> - ${o.noKuitansi}<br><small style="color:#a3c2a8">${o.kg} kg | ${o.paket} | Total Rp ${o.total.toLocaleString('id-ID')} | ${o.metodeBayar} | Kurir: ${o.kurir} | Status: ${o.status}</small><br>
-    <div class="bank" style="background:${isTF?'#06281a':'#7a4a00'};border:1px solid ${isTF?'#2ecc71':'#f59e0b'}">${isTF?'Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b>901195106698</b><br>a.n YHANUAR TRIWIBOWO':'💵 TAGIH CASH KE PELANGGAN<br><b>Rp '+o.total.toLocaleString('id-ID')+'</b>'}</div>
+    return `<div style="border-bottom:1px solid #2e4d36;padding:10px 0"><b>${o.nama}</b> - ${o.noKuitansi}<br><small style="color:#a3c2a8">${o.kg} kg | ${o.paket} | Total Rp ${o.total.toLocaleString('id-ID')} | ${o.metodeBayar} | Kurir: ${o.kurir} | Status: ${o.status || 'LUNAS'}</small><br>
+    <div class="bank" style="background:${isTF?'#06281a':'#14532d'};border:1px solid #2ecc71">${isTF?'Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b>901195106698</b><br>a.n YHANUAR TRIWIBOWO':'✅ CASH - LUNAS<br><b>Rp '+o.total.toLocaleString('id-ID')+'</b><br><small>Pembayaran diterima di tempat</small>'}</div>
     ${o.foto?`<img src="${o.foto}">`:''}<button class="btn-dark" onclick="printLagi('${o.id}')">🖨️ PRINT ULANG STRUK (BLUETOOTH)</button></div>`}).join('');
 });
 window.printLagi = (id)=>{ let o=orders.find(x=>x.id===id); if(o) printStruk(o); }
 </script>
 </body>
-    </html>
+  </html>
