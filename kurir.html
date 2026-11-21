@@ -202,7 +202,6 @@ function hitung(){
   var ct=document.getElementById('cashTotal'); if(ct) ct.innerText='Rp '+(laundry+5000).toLocaleString('id-ID');
   return {kg:kg,laundry:laundry,total:laundry+5000,paket:namaPaket,harga:parseFloat(harga)};
 }
-// SIMPAN PAKE FETCH - GAK PAKE MODULE, PASTI JALAN
 async function simpan(){
   var h=hitung();
   var nama=document.getElementById('nama').value.trim();
@@ -298,4 +297,4 @@ async function printStruk(o){
 function printLagi(id){ var o=orders.find(function(x){ return x.id===id; }); if(o) printStruk(o); }
 </script>
 </body>
-      </html>
+  </html>
