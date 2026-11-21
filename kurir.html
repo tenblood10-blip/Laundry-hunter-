@@ -4,56 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kurir - Shaka Laundry</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#007bff">
+<meta name="theme-color" content="#0f1f14">
 <style>
-*{box-sizing:border-box;font-family:sans-serif} body{margin:0;background:#f0f2f5;padding:12px;padding-bottom:90px}
-.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ddd;margin:7px 0;font-size:15px}
+*{box-sizing:border-box;font-family:sans-serif}
+body{margin:0;background:#0f1f14;padding:12px;padding-bottom:90px;color:#e8f5e9}
+.card{background:#1a2e22;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 15px rgba(0,0,0,.4);border:1px solid #2e4d36}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #3a5a44;margin:7px 0;font-size:15px;background:#12241a;color:#fff;outline:none}
+input::placeholder,textarea::placeholder{color:#8aa894}
 button{width:100%;padding:14px;border:0;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer}
-.btn-blue{background:#007bff;color:#fff} .btn-green{background:#28a745;color:#fff} .btn-dark{background:#111;color:#fff} .btn-grey{background:#eee}
+.btn-blue{background:#2ecc71;color:#06281a} .btn-green{background:#27ae60;color:#fff} .btn-dark{background:#06281a;color:#2ecc71;border:1px solid #2ecc71} .btn-grey{background:#2e4d36;color:#fff}
 .top{display:flex;justify-content:space-between;align-items:center}
-.dot{width:12px;height:12px;border-radius:50%;background:#ccc;display:inline-block} .dot.on{background:#22c55e;box-shadow:0 0 8px #22c55e}
-.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px} .kpi .card{margin:0;text-align:center}
-.bar{height:12px;background:#eee;border-radius:20px;overflow:hidden} .bar div{height:100%;background:#007bff}
-.bayar{display:flex;gap:8px} .bayar label{flex:1;text-align:center;border:2px solid #eee;padding:12px;border-radius:12px;cursor:pointer} .bayar input{display:none} .bayar label.active{border-color:#007bff;background:#eef6ff}
+.dot{width:12px;height:12px;border-radius:50%;background:#555;display:inline-block} .dot.on{background:#2ecc71;box-shadow:0 0 8px #2ecc71}
+.bar{height:12px;background:#12241a;border-radius:20px;overflow:hidden;border:1px solid #2e4d36} .bar div{height:100%;background:linear-gradient(90deg,#27ae60,#2ecc71)}
+.bayar{display:flex;gap:8px} .bayar label{flex:1;text-align:center;border:2px solid #3a5a44;padding:12px;border-radius:12px;cursor:pointer;background:#12241a;color:#ddd} .bayar input{display:none} .bayar label.active{border-color:#2ecc71;background:#1e3d2b;color:#fff}
 .bank{border-radius:12px;padding:14px;text-align:center;margin:10px 0;color:#fff}
 img{width:100%;border-radius:12px;margin-top:8px}
-.small{font-size:12px;color:#666}
-#login{position:fixed;inset:0;background:#007bff;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99}
+.small{font-size:12px;color:#a3c2a8}
+h2,h3{color:#fff}
+#login{position:fixed;inset:0;background:#0f1f14;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99}
+#login .card{background:#1a2e22;border:1px solid #2ecc71}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px} .kpi .card{margin:0;text-align:center}
 </style>
 </head>
 <body>
 
 <div id="login">
   <div class="card" style="width:100%;max-width:360px;text-align:center">
-    <h2>🛵 SHAKA LAUNDRY</h2><p>Login Kurir</p>
+    <h2>🛵🌿 SHAKA LAUNDRY</h2><p style="color:#a3c2a8">Login Kurir</p>
+    <label style="text-align:left;display:block;font-size:13px;color:#a3c2a8">Pilih Nama Kurir:</label>
+    <select id="namaKurirLogin"><option value="Yhanuar">Yhanuar</option></select>
     <input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN 4 Angka" style="text-align:center;font-size:24px;letter-spacing:8px">
-    <input id="namaKurirLogin" placeholder="Nama Kurir (contoh: Yhanuar)">
     <button class="btn-blue" onclick="login()">MASUK</button>
-    <p class="small">PIN ditentukan Bos di Dashboard. Default: 1234</p>
+    <p class="small" id="infoDefault">Default: Yhanuar / PIN 1234<br>Nanti Bos bisa ganti dari Dashboard</p>
   </div>
 </div>
 
 <div class="card top">
-  <div><b>🛵 Shaka Laundry</b><br><small id="hiKurir">Kurir: -</small></div>
+  <div><b>🛵🌿 Shaka Laundry</b><br><small id="hiKurir" style="color:#a3c2a8">Kurir: -</small></div>
   <div style="text-align:right">
-    <button onclick="toggleBT()" style="width:auto;padding:8px 12px;background:#111;color:#fff">📶 Bluetooth</button><br>
-    <span class="dot" id="dotBT"></span> <small id="txtBT">Belum Tersambung</small>
-  </div>
-</div>
-
-<div class="kpi">
-  <div class="card">
-    <small>🎯 TARGET 10 PELANGGAN</small>
-    <h2 id="kpiCust">0 / 10</h2>
-    <div class="bar"><div id="barCust" style="width:0%"></div></div>
-    <p class="small" id="kpiGaji">Kurang 10 pelanggan lagi ke Gaji Rp 50.000 + Bensin Rp 20.000</p>
-  </div>
-  <div class="card">
-    <small>💰 BONUS AKUMULASI</small>
-    <h2 id="kpiBonus">Rp 0</h2>
-    <p class="small" id="kpiKg">0 kg x Rp 1.000 /kg<br>Bonus mulai setelah 10 pelanggan</p>
+    <button onclick="toggleBT()" style="width:auto;padding:8px 12px;background:#2ecc71;color:#06281a;border-radius:10px;font-weight:700">📶 Bluetooth</button><br>
+    <span class="dot" id="dotBT"></span> <small id="txtBT" style="color:#a3c2a8">Belum Tersambung</small>
   </div>
 </div>
 
@@ -63,7 +53,7 @@ img{width:100%;border-radius:12px;margin-top:8px}
   <input id="wa" placeholder="No. WA Pelanggan (08...)">
   <textarea id="alamat" placeholder="Lokasi / Alamat Pelanggan Lengkap"></textarea>
   <button class="btn-grey" onclick="gps()">📍 Gunakan Lokasi GPS Saya</button>
-  <input id="kurir" placeholder="Nama Kurir Pengambil Orderan">
+  <input id="kurir" placeholder="Nama Kurir Pengambil Orderan" readonly style="background:#06281a;color:#2ecc71;font-weight:700">
   <label><b>📸 Foto Timbangan</b></label>
   <input type="file" id="foto" accept="image/*" capture="environment" onchange="previewFoto(event)">
   <img id="imgFoto" style="display:none">
@@ -74,24 +64,42 @@ img{width:100%;border-radius:12px;margin-top:8px}
     <option value="10000|Express 1 Hari">Express 1 Hari - Rp 10.000/kg</option>
     <option value="12000|Cuci Setrika">Cuci Setrika - Rp 12.000/kg</option>
   </select>
-  <div style="background:#f8f9fa;padding:12px;border-radius:12px">
+  <div style="background:#12241a;padding:12px;border-radius:12px;border:1px solid #2e4d36">
     <div style="display:flex;justify-content:space-between"><span>Total Laundry</span><b id="tLaundry">Rp 0</b></div>
     <div style="display:flex;justify-content:space-between"><span>Jasa Antar Jemput</span><b>Rp 5.000</b></div>
-    <hr><div style="display:flex;justify-content:space-between;font-size:18px"><b>TOTAL BAYAR</b><b id="tTotal" style="color:#007bff">Rp 0</b></div>
+    <hr style="border-color:#2e4d36"><div style="display:flex;justify-content:space-between;font-size:18px"><b>TOTAL BAYAR</b><b id="tTotal" style="color:#2ecc71">Rp 0</b></div>
   </div>
   <label><b>💳 Pembayaran</b></label>
   <div class="bayar">
     <label id="lbTF" class="active" onclick="pilihBayar('TRANSFER SEABANK')"><input type="radio" name="bayar" value="TRANSFER SEABANK" checked>🏦 TF SEABANK</label>
     <label id="lbManual" onclick="pilihBayar('MANUAL')"><input type="radio" name="bayar" value="MANUAL">💵 MANUAL / CASH</label>
   </div>
-  <div id="infoBayar" class="bank" style="background:#111">
-    Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>
+  <div id="infoBayar" class="bank" style="background:#06281a;border:1px solid #2ecc71">
+    Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>
   </div>
-  <div style="background:#111;color:#fff;padding:12px;border-radius:12px;text-align:center;margin-top:10px">No. Kuitansi: <b id="noKuitansi">SHAKA-...</b></div>
+  <div style="background:#06281a;color:#fff;padding:12px;border-radius:12px;text-align:center;margin-top:10px;border:1px solid #2ecc71">No. Kuitansi: <b id="noKuitansi" style="color:#2ecc71">SHAKA-...</b></div>
   <button class="btn-blue" onclick="simpan()" style="margin-top:10px">💾 SIMPAN ORDER & PRINT STRUK BLUETOOTH</button>
 </div>
 
 <div class="card"><h3>📦 Order Hari Ini (Live)</h3><div id="list">Memuat...</div></div>
+
+<!-- ACHIEVEMENT PINDAH KE PALING BAWAH -->
+<div class="card" style="border:1px solid #2ecc71">
+  <h3>🏆 Achievement Saya</h3>
+  <div class="kpi">
+    <div class="card" style="border:0;box-shadow:none;background:#12241a">
+      <small style="color:#2ecc71">🎯 TARGET 10 PELANGGAN</small>
+      <h2 id="kpiCust">0 / 10</h2>
+      <div class="bar"><div id="barCust" style="width:0%"></div></div>
+      <p class="small" id="kpiGaji">Kurang 10 pelanggan lagi ke Gaji Rp 50.000 + Bensin Rp 20.000</p>
+    </div>
+    <div class="card" style="border:0;box-shadow:none;background:#12241a">
+      <small style="color:#2ecc71">💰 BONUS AKUMULASI</small>
+      <h2 id="kpiBonus">Rp 0</h2>
+      <p class="small" id="kpiKg">0 kg x Rp 1.000 /kg<br>Bonus mulai setelah 10 pelanggan</p>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -108,12 +116,26 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-let metodeBayar='TRANSFER SEABANK', fotoData='', pinBos='1234', bluetoothDevice=null, orders=[], kurirSaya='';
+let metodeBayar='TRANSFER SEABANK', fotoData='', bluetoothDevice=null, orders=[], kurirSaya='';
+let daftarKurir = [{nama:'Yhanuar', pin:'1234'}]; // DEFAULT - nanti diambil dari Dashboard Bos
+
+// Ambil daftar kurir dari Dashboard Bos, kalau belum ada pakai default
+onValue(ref(db,'settings/kurirs'), (snap)=>{
+  if(snap.exists()){
+    let arr=[]; snap.forEach(c=>arr.push(c.val()));
+    if(arr.length>0) daftarKurir=arr;
+  }
+  let sel=document.getElementById('namaKurirLogin');
+  sel.innerHTML = daftarKurir.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('');
+  document.getElementById('infoDefault').innerHTML = daftarKurir.length===1 && daftarKurir[0].nama==='Yhanuar' ? 'Default: Yhanuar / PIN 1234<br>Nanti Bos bisa ganti dari Dashboard' : 'Kurir diatur dari Dashboard Bos';
+});
+
 window.login = async ()=>{
   let pin=document.getElementById('pin').value;
-  let nama=document.getElementById('namaKurirLogin').value || 'Kurir';
-  try{ let s=await get(ref(db,'settings/kurirPin')); if(s.exists()) pinBos=s.val(); }catch(e){}
-  if(pin!==pinBos) return alert('PIN salah! Minta PIN ke Bos.');
+  let nama=document.getElementById('namaKurirLogin').value;
+  let kurirDitemukan = daftarKurir.find(k=>k.nama===nama);
+  let pinBenar = kurirDitemukan ? kurirDitemukan.pin : '1234';
+  if(pin!==pinBenar) return alert('PIN salah untuk '+nama+'! Minta PIN ke Bos.');
   kurirSaya=nama;
   document.getElementById('login').style.display='none';
   document.getElementById('hiKurir').innerText='Kurir: '+nama;
@@ -126,8 +148,8 @@ window.pilihBayar = (v)=>{
   document.getElementById('lbTF').className=v==='TRANSFER SEABANK'?'active':'';
   document.getElementById('lbManual').className=v==='MANUAL'?'active':'';
   let info=document.getElementById('infoBayar');
-  if(v==='TRANSFER SEABANK'){ info.style.background='#111'; info.innerHTML='Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>'; }
-  else{ info.style.background='#f59e0b'; info.innerHTML='💵 TAGIH CASH KE PELANGGAN<br><b style="font-size:22px" id="cashTotal">Rp 0</b><br><small>Minta uang tunai, foto uang / kuitansi</small>'; hitung(); }
+  if(v==='TRANSFER SEABANK'){ info.style.background='#06281a'; info.innerHTML='Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>'; }
+  else{ info.style.background='#7a4a00'; info.innerHTML='💵 TAGIH CASH KE PELANGGAN<br><b style="font-size:22px" id="cashTotal">Rp 0</b><br><small>Minta uang tunai, foto uang / kuitansi</small>'; hitung(); }
 }
 function buatKuitansi(){ let d=new Date(); let tgl=d.getFullYear()+''+String(d.getMonth()+1).padStart(2,'0')+''+String(d.getDate()).padStart(2,'0'); return 'SHAKA-'+tgl+'-'+String(orders.length+1).padStart(4,'0'); }
 window.hitung = ()=>{
@@ -161,35 +183,4 @@ window.toggleBT = async ()=>{
 }
 window.printStruk = async (o)=>{
   let bayarTxt = o.metodeBayar==='TRANSFER SEABANK' ? 'TF SEABANK\nPT. BANK SEABANK INDONESIA\n901195106698\na.n YHANUAR TRIWIBOWO' : 'MANUAL / CASH\nTagih Cash Ke Pelanggan';
-  let struk=`SHAKA LAUNDRY\nPerumahan Puri Cipageran Indah 1 Blok A No. 151\n--------------------------------\nNo. Kuitansi: ${o.noKuitansi}\nTanggal: ${o.tanggal}\nKurir: ${o.kurir}\nPelanggan: ${o.nama}\nAlamat: ${o.alamat}\nBerat: ${o.kg} kg\nPaket: ${o.paket}\nTotal Laundry: Rp ${o.totalLaundry.toLocaleString('id-ID')}\nAntar Jemput: Rp 5.000\nTOTAL BAYAR: Rp ${o.total.toLocaleString('id-ID')}\nBayar: ${bayarTxt}\n--------------------------------\nCustomer Service: 089526193272\nTerima kasih sudah laundry di Shaka!\n\n\n`;
-  if(!bluetoothDevice){
-    let mau = confirm('Printer Bluetooth belum tersambung!\n\nSambungkan dulu?\n\nOK = Sambungkan Bluetooth\nCancel = Print via browser (darurat)');
-    if(mau){ await toggleBT(); }
-    else{ let w=window.open('','_blank'); w.document.write('<pre>'+struk+'</pre><button onclick="window.print()">PRINT</button>'); return; }
-  }
-  alert('🖨️ MENGIRIM KE PRINTER BLUETOOTH:\n'+ (bluetoothDevice? bluetoothDevice.name : '') +'\n\n'+struk);
-}
-onValue(ref(db,'orders'), (snap)=>{
-  orders=[]; snap.forEach(c=>{ orders.push({id:c.key, ...c.val()}) });
-  document.getElementById('noKuitansi').innerText=buatKuitansi();
-  let myOrders=orders.filter(o=>o.kurir===kurirSaya);
-  let jml=myOrders.length;
-  let jmlBonusKg=0, bonus=0;
-  if(jml>10){ let sisa=myOrders.slice(10); jmlBonusKg=sisa.reduce((a,b)=>a+parseFloat(b.kg||0),0); bonus=Math.round(jmlBonusKg*1000); }
-  document.getElementById('kpiCust').innerText=Math.min(jml,10)+' / 10';
-  document.getElementById('barCust').style.width=Math.min(jml/10*100,100)+'%';
-  document.getElementById('kpiGaji').innerText = jml>=10 ? '✅ TERBUKA! Gaji Rp 50.000 + Bensin Rp 20.000 CAIR!' : 'Kurang '+(10-jml)+' pelanggan lagi ke Gaji Rp 50.000 + Bensin Rp 20.000';
-  document.getElementById('kpiBonus').innerText='Rp '+bonus.toLocaleString('id-ID');
-  document.getElementById('kpiKg').innerHTML=jmlBonusKg.toFixed(3)+' kg x Rp 1.000 /kg<br>'+ (jml>=10 ? 'Bonus jalan terus!' : 'Bonus mulai setelah 10 pelanggan');
-  let list=document.getElementById('list');
-  if(!orders.length) list.innerHTML='Belum ada order.';
-  else list.innerHTML=orders.slice().reverse().map(o=>{
-    let isTF = o.metodeBayar==='TRANSFER SEABANK';
-    return `<div style="border-bottom:1px solid #eee;padding:10px 0"><b>${o.nama}</b> - ${o.noKuitansi}<br><small>${o.kg} kg | ${o.paket} | Total Rp ${o.total.toLocaleString('id-ID')} | ${o.metodeBayar} | Kurir: ${o.kurir} | Status: ${o.status}</small><br>
-    <div class="bank" style="background:${isTF?'#111':'#f59e0b'}">${isTF?'Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b>901195106698</b><br>a.n YHANUAR TRIWIBOWO':'💵 TAGIH CASH KE PELANGGAN<br><b>Rp '+o.total.toLocaleString('id-ID')+'</b>'}</div>
-    ${o.foto?`<img src="${o.foto}">`:''}<button class="btn-dark" onclick="printLagi('${o.id}')">🖨️ PRINT ULANG STRUK (BLUETOOTH)</button></div>`}).join('');
-});
-window.printLagi = (id)=>{ let o=orders.find(x=>x.id===id); if(o) printStruk(o); }
-</script>
-</body>
-                       </html>
+  let struk=`SHAKA LAUNDRY\nPerumahan Puri Cipageran Indah 1 Blok A No. 151\n--------------------------------\nNo.
