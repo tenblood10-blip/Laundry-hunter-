@@ -1,23 +1,94 @@
 <!DOCTYPE html>
-<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laundry Hunter</title><style>body{font-family:sans-serif;background:#0f172a;color:#fff;padding:20px;max-width:500px;margin:auto}h1{text-align:center}input,select,button{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:none;font-size:16px}button{background:#22c55e;font-weight:bold} .card{background:#1e293b;padding:15px;border-radius:12px;margin:10px 0}small{color:#94a3b8}</style></head><body>
-<h1>🧺 Laundry Hunter</h1><p style="text-align:center"><small>Order Laundry Kiloan</small></p>
-<input id="nama" placeholder="Nama Pelanggan">
-<input id="hp" placeholder="No HP / WA">
-<select id="layanan"><option value="Cuci Kering - Rp 7000/kg">Cuci Kering - Rp 7000/kg</option><option value="Cuci Setrika - Rp 10000/kg">Cuci Setrika - Rp 10000/kg</option><option value="Setrika Saja - Rp 5000/kg">Setrika Saja - Rp 5000/kg</option></select>
-<input id="berat" type="number" placeholder="Berat (kg)">
-<button onclick="simpan()">+ Tambah Order</button>
-<div id="list"></div>
-<script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getFirestore,collection,addDoc,onSnapshot,query,orderBy,deleteDoc,doc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyAihBZqdi4Cn5LbYagXDrffa4a6ysgVJn4",authDomain:"shaka-laundry.firebaseapp.com",projectId:"shaka-laundry",storageBucket:"shaka-laundry.firebasestorage.app",messagingSenderId:"228092735547",appId:"1:228092735547:web:6fa73a5c43dc654cfd2c1e",measurementId:"G-NNRWFP11RB"};
-const app=initializeApp(firebaseConfig);const db=getFirestore(app);
-window.simpan=async()=>{
-let n=nama.value,h=hp.value,l=layanan.value,b=berat.value;
-if(!n||!b) return alert("Isi nama & berat!");
-await addDoc(collection(db,"orders"),{nama:n,hp:h,layanan:l,berat:b,waktu:new Date().toLocaleString('id-ID'),status:"Baru"});
-nama.value="";hp.value="";berat.value="";};
-onSnapshot(query(collection(db,"orders"),orderBy("waktu","desc")),(s)=>{
-list.innerHTML="";s.forEach(d=>{let o=d.data();list.innerHTML+=`<div class="card"><b>${o.nama}</b> - ${o.berat} kg<br><small>${o.layanan} | ${o.waktu}</small><br><small>${o.hp}</small><br><button onclick="hapus('${d.id}')" style="background:#ef4444;margin-top:8px">Hapus / Selesai</button></div>`})});
-window.hapus=async(id)=>{await deleteDoc(doc(db,"orders",id))};
-</script></body></html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shaka Laundry - Bandung</title>
+<style>
+*{box-sizing:border-box;font-family:sans-serif}
+body{margin:0;background:#f0f2f5;padding:16px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+h1{margin:0;font-size:22px} p{color:#666;font-size:14px}
+.paket{display:flex;justify-content:space-between;align-items:center;border:2px solid #eee;border-radius:12px;padding:12px;margin:8px 0;cursor:pointer}
+.paket.active{border-color:#007bff;background:#eef6ff}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #ddd;margin:8px 0;font-size:15px}
+.bank{background:#111;color:#fff;border-radius:14px;padding:16px;text-align:center}
+.bank b{font-size:26px;letter-spacing:1px}
+button{width:100%;padding:14px;border:0;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-copy{background:#fff;color:#111;margin-top:10px}
+.btn-order{background:#007bff;color:#fff}
+.label-bayar{display:flex;gap:10px;border:2px solid #eee;padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer}
+.label-bayar.active{border-color:#007bff;background:#eef6ff}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>🧺 Shaka Laundry</h1>
+<p>Laundry Kiloan - Bandung | Jemput - Antar</p>
+</div>
+<div class="card">
+<h3>Pilih Paket</h3>
+<div class="paket active" onclick="pilih(this,7000,'Cuci Kering 2 Hari')">
+  <div><b>Cuci Kering 2 Hari</b><br><small>Cuci + Kering + Lipat</small></div><b>Rp 7.000 /kg</b>
+</div>
+<div class="paket" onclick="pilih(this,10000,'Express 1 Hari')">
+  <div><b>Express 1 Hari</b><br><small>Prioritas Kilat</small></div><b>Rp 10.000 /kg</b>
+</div>
+<div class="paket" onclick="pilih(this,12000,'Cuci Setrika')">
+  <div><b>Cuci Setrika</b><br><small>Cuci + Setrika Rapi</small></div><b>Rp 12.000 /kg</b>
+</div>
+<input id="nama" placeholder="Nama Kamu">
+<input id="wa" placeholder="No. WA Kamu (08...)">
+<input id="alamat" placeholder="Alamat Jemput Lengkap">
+<input id="kg" type="number" placeholder="Perkiraan Berat (kg) - contoh: 3" oninput="hitung()">
+<h3 id="total">Total: Rp 0</h3>
+</div>
+<div class="card">
+<h3>💳 Pilih Cara Bayar</h3>
+<label class="label-bayar active" onclick="pilihBayar(this)">
+  <input type="radio" name="bayar" value="TRANSFER SEABANK" checked>
+  <div><b>🏦 Transfer SeaBank</b><br><small>DANA / OVO / GoPay / m-banking ke SeaBank</small></div>
+</label>
+<label class="label-bayar" onclick="pilihBayar(this)">
+  <input type="radio" name="bayar" value="MANUAL / CASH">
+  <div><b>💵 Bayar Manual (Cash)</b><br><small>Bayar tunai ke kurir pas jemput / antar</small></div>
+</label>
+<div id="box-seabank" style="margin-top:12px">
+  <div class="bank">
+    <div>PT. BANK SEABANK INDONESIA</div>
+    <div style="font-size:13px;opacity:.7;margin:6px 0">a.n YHANUAR TRIWIBOWO</div>
+    <b>901195106698</b>
+    <button class="btn-copy" onclick="salin()">📋 Salin No. Rekening</button>
+  </div>
+  <p style="text-align:center">Transfer dari e-wallet / m-banking apa aja ke nomor di atas.</p>
+</div>
+<div id="box-cash" style="display:none;margin-top:12px;background:#fff3cd;padding:14px;border-radius:12px;text-align:center">
+  <b>💵 Bayar Cash Ke Kurir</b><br>
+  <small>Siapin uang pas ya, kurir akan foto bukti bayar kamu</small>
+</div>
+<button class="btn-order" onclick="pesan()">PESAN & MINTA JEMPUT 🛵</button>
+</div>
+<script>
+let harga=7000, paketNama='Cuci Kering 2 Hari';
+function pilih(el,h,nama){document.querySelectorAll('.paket').forEach(p=>p.classList.remove('active'));el.classList.add('active');harga=h;paketNama=nama;hitung();}
+function pilihBayar(el){document.querySelectorAll('.label-bayar').forEach(l=>l.classList.remove('active'));el.classList.add('active');
+  let v=el.querySelector('input').value;
+  document.getElementById('box-seabank').style.display = v==='TRANSFER SEABANK' ? 'block':'none';
+  document.getElementById('box-cash').style.display = v==='MANUAL / CASH' ? 'block':'none';
+}
+function hitung(){let kg=document.getElementById('kg').value||0;document.getElementById('total').innerText='Total: Rp '+(kg*harga).toLocaleString('id-ID');}
+function salin(){navigator.clipboard.writeText('901195106698');alert('No. Rekening tersalin!');}
+function pesan(){
+  let nama=document.getElementById('nama').value, wa=document.getElementById('wa').value, alamat=document.getElementById('alamat').value, kg=document.getElementById('kg').value||0;
+  if(!nama||!wa||!alamat||!kg) return alert('Lengkapi dulu nama, WA, alamat & berat ya!');
+  let total=kg*harga;
+  let metodeBayar=document.querySelector('input[name="bayar"]:checked').value;
+  let order={nama,wa,alamat,kg,paket:paketNama,total,metodeBayar:metodeBayar,tanggal:new Date().toLocaleString('id-ID'),status:'Menunggu Kurir',bukti:''};
+  let list=JSON.parse(localStorage.getItem('shaka_orders')||'[]'); list.push(order); localStorage.setItem('shaka_orders',JSON.stringify(list));
+  let pesanWA=`Halo Shaka Laundry! Saya mau pesan:\n\nNama: ${nama}\nPaket: ${paketNama}\nBerat: ${kg} kg\nTotal: Rp ${total.toLocaleString('id-ID')}\nCara Bayar: ${metodeBayar}\nAlamat: ${alamat}\n\n${metodeBayar==='TRANSFER SEABANK' ? 'Saya akan transfer ke SeaBank 901195106698 a.n YHANUAR TRIWIBOWO' : 'Saya akan bayar cash ke kurir'}`;
+  window.open('https://wa.me/6289521693272?text='+encodeURIComponent(pesanWA),'_blank');
+  alert('Pesanan tersimpan! Metode bayar: '+metodeBayar);
+}
+</script>
+</body>
+  </html>
