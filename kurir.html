@@ -79,17 +79,14 @@ img{width:100%;border-radius:12px;margin-top:8px}
     <div style="display:flex;justify-content:space-between"><span>Jasa Antar Jemput</span><b>Rp 5.000</b></div>
     <hr><div style="display:flex;justify-content:space-between;font-size:18px"><b>TOTAL BAYAR</b><b id="tTotal" style="color:#007bff">Rp 0</b></div>
   </div>
-
-  <label><b>💳 Pembayaran - 2 PILIHAN SAJA</b></label>
+  <label><b>💳 Pembayaran</b></label>
   <div class="bayar">
     <label id="lbTF" class="active" onclick="pilihBayar('TRANSFER SEABANK')"><input type="radio" name="bayar" value="TRANSFER SEABANK" checked>🏦 TF SEABANK</label>
     <label id="lbManual" onclick="pilihBayar('MANUAL')"><input type="radio" name="bayar" value="MANUAL">💵 MANUAL / CASH</label>
   </div>
-
   <div id="infoBayar" class="bank" style="background:#111">
     Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>
   </div>
-
   <div style="background:#111;color:#fff;padding:12px;border-radius:12px;text-align:center;margin-top:10px">No. Kuitansi: <b id="noKuitansi">SHAKA-...</b></div>
   <button class="btn-blue" onclick="simpan()" style="margin-top:10px">💾 SIMPAN ORDER & PRINT STRUK BLUETOOTH</button>
 </div>
@@ -100,17 +97,18 @@ img{width:100%;border-radius:12px;margin-top:8px}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const firebaseConfig = {
-  apiKey: "GANTI_APIKEY_LU",
-  authDomain: "GANTI_PROJECT.firebaseapp.com",
-  databaseURL: "https://GANTI_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "GANTI_PROJECT",
-  storageBucket: "GANTI_PROJECT.appspot.com",
-  messagingSenderId: "123456",
-  appId: "1:123456:web:xxx"
+  apiKey: "AIzaSyAihBZqdi4Cn5LbYagXDrffa4a6ysgVJn4",
+  authDomain: "shaka-laundry.firebaseapp.com",
+  databaseURL: "https://shaka-laundry-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "shaka-laundry",
+  storageBucket: "shaka-laundry.firebasestorage.app",
+  messagingSenderId: "228092735547",
+  appId: "1:228092735547:web:6fa73a5c43dc654cfd2c1e",
+  measurementId: "G-NNRWFP11RB"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-let metodeBayar='TRANSFER SEABANK', fotoData='', pinBos='1234', bluetoothDevice=null, bluetoothChar=null, orders=[], kurirSaya='';
+let metodeBayar='TRANSFER SEABANK', fotoData='', pinBos='1234', bluetoothDevice=null, orders=[], kurirSaya='';
 window.login = async ()=>{
   let pin=document.getElementById('pin').value;
   let nama=document.getElementById('namaKurirLogin').value || 'Kurir';
@@ -164,7 +162,34 @@ window.toggleBT = async ()=>{
 window.printStruk = async (o)=>{
   let bayarTxt = o.metodeBayar==='TRANSFER SEABANK' ? 'TF SEABANK\nPT. BANK SEABANK INDONESIA\n901195106698\na.n YHANUAR TRIWIBOWO' : 'MANUAL / CASH\nTagih Cash Ke Pelanggan';
   let struk=`SHAKA LAUNDRY\nPerumahan Puri Cipageran Indah 1 Blok A No. 151\n--------------------------------\nNo. Kuitansi: ${o.noKuitansi}\nTanggal: ${o.tanggal}\nKurir: ${o.kurir}\nPelanggan: ${o.nama}\nAlamat: ${o.alamat}\nBerat: ${o.kg} kg\nPaket: ${o.paket}\nTotal Laundry: Rp ${o.totalLaundry.toLocaleString('id-ID')}\nAntar Jemput: Rp 5.000\nTOTAL BAYAR: Rp ${o.total.toLocaleString('id-ID')}\nBayar: ${bayarTxt}\n--------------------------------\nCustomer Service: 089526193272\nTerima kasih sudah laundry di Shaka!\n\n\n`;
-  // SEMUA PRINT VIA BLUETOOTH - jika belum tersambung, minta sambung dulu
   if(!bluetoothDevice){
     let mau = confirm('Printer Bluetooth belum tersambung!\n\nSambungkan dulu?\n\nOK = Sambungkan Bluetooth\nCancel = Print via browser (darurat)');
-    if(mau){
+    if(mau){ await toggleBT(); }
+    else{ let w=window.open('','_blank'); w.document.write('<pre>'+struk+'</pre><button onclick="window.print()">PRINT</button>'); return; }
+  }
+  alert('🖨️ MENGIRIM KE PRINTER BLUETOOTH:\n'+ (bluetoothDevice? bluetoothDevice.name : '') +'\n\n'+struk);
+}
+onValue(ref(db,'orders'), (snap)=>{
+  orders=[]; snap.forEach(c=>{ orders.push({id:c.key, ...c.val()}) });
+  document.getElementById('noKuitansi').innerText=buatKuitansi();
+  let myOrders=orders.filter(o=>o.kurir===kurirSaya);
+  let jml=myOrders.length;
+  let jmlBonusKg=0, bonus=0;
+  if(jml>10){ let sisa=myOrders.slice(10); jmlBonusKg=sisa.reduce((a,b)=>a+parseFloat(b.kg||0),0); bonus=Math.round(jmlBonusKg*1000); }
+  document.getElementById('kpiCust').innerText=Math.min(jml,10)+' / 10';
+  document.getElementById('barCust').style.width=Math.min(jml/10*100,100)+'%';
+  document.getElementById('kpiGaji').innerText = jml>=10 ? '✅ TERBUKA! Gaji Rp 50.000 + Bensin Rp 20.000 CAIR!' : 'Kurang '+(10-jml)+' pelanggan lagi ke Gaji Rp 50.000 + Bensin Rp 20.000';
+  document.getElementById('kpiBonus').innerText='Rp '+bonus.toLocaleString('id-ID');
+  document.getElementById('kpiKg').innerHTML=jmlBonusKg.toFixed(3)+' kg x Rp 1.000 /kg<br>'+ (jml>=10 ? 'Bonus jalan terus!' : 'Bonus mulai setelah 10 pelanggan');
+  let list=document.getElementById('list');
+  if(!orders.length) list.innerHTML='Belum ada order.';
+  else list.innerHTML=orders.slice().reverse().map(o=>{
+    let isTF = o.metodeBayar==='TRANSFER SEABANK';
+    return `<div style="border-bottom:1px solid #eee;padding:10px 0"><b>${o.nama}</b> - ${o.noKuitansi}<br><small>${o.kg} kg | ${o.paket} | Total Rp ${o.total.toLocaleString('id-ID')} | ${o.metodeBayar} | Kurir: ${o.kurir} | Status: ${o.status}</small><br>
+    <div class="bank" style="background:${isTF?'#111':'#f59e0b'}">${isTF?'Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b>901195106698</b><br>a.n YHANUAR TRIWIBOWO':'💵 TAGIH CASH KE PELANGGAN<br><b>Rp '+o.total.toLocaleString('id-ID')+'</b>'}</div>
+    ${o.foto?`<img src="${o.foto}">`:''}<button class="btn-dark" onclick="printLagi('${o.id}')">🖨️ PRINT ULANG STRUK (BLUETOOTH)</button></div>`}).join('');
+});
+window.printLagi = (id)=>{ let o=orders.find(x=>x.id===id); if(o) printStruk(o); }
+</script>
+</body>
+                       </html>
