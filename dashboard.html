@@ -3,7 +3,7 @@
 <title>Dashboard Bos - Shaka Laundry</title>
 <style>
 *{box-sizing:border-box;font-family:sans-serif}
-body{margin:0;background:#0b1a12;color:#e8f5e9;padding:14px;padding-bottom:90px}
+body{margin:0;background:#0b1a12;color:#e8f5e9;padding:14px;padding-bottom:100px}
 .top{display:flex;justify-content:space-between;align-items:center}
 .logo{background:#2ecc71;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
 input,select{width:100%;padding:13px;border-radius:14px;border:1px solid #2e4d36;background:#132a1e;color:#fff;margin:6px 0;font-size:14px;outline:none}
@@ -34,15 +34,31 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer}
 .cal-day.ada{background:#3a2f0a;border-color:#ff9f2e;color:#ffcc6b;font-weight:700}
 .cal-day.hari-ini{border:2px solid #2ecc71} .cal-day.pilih{background:#2ecc71;color:#06281a;font-weight:800}
 .cal-day small{display:block;font-size:10px;margin-top:2px} .cal-day.minggu{color:#ff5e5e}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#0b1a12;border-top:1px solid #2e4d36;display:flex;padding:8px 0 12px;z-index:99}
-.nav button{flex:1;background:none;color:#7a9a80;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
-.nav button span{font-size:20px} .nav button.on{color:#2ecc71}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#0b1a12;border-top:2px solid #2ecc71;display:flex;padding:10px 0 14px;z-index:999}
+.nav button{flex:1;background:none;color:#7a9a80;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0}
+.nav button span{font-size:22px} .nav button.on{color:#2ecc71}
 .tab{display:none} .tab.on{display:block}
 .kurir-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2e4d36;padding:12px 0}
-</style></head><body>
+</style>
+<script>
+// NAV DITARO PALING ATAS - BIAR WALAU SCRIPT BAWAH ERROR, NAV TETEP JALAN
+function pindahTab(nama,btn){
+  var tabs=document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('on');
+  var t=document.getElementById('tab-'+nama);
+  if(t) t.classList.add('on');
+  var navs=document.querySelectorAll('.nav button');
+  for(var j=0;j<navs.length;j++) navs[j].classList.remove('on');
+  if(btn) btn.classList.add('on');
+  window.scrollTo(0,0);
+  if(nama==='kalender' && typeof renderKalender==='function') renderKalender();
+  if(nama==='pelanggan' && typeof renderPelanggan==='function') renderPelanggan();
+}
+</script>
+</head><body>
 
 <div class="top">
-  <div style="display:flex;gap:10px;align-items:center"><div class="logo">🌿</div><div><b>Shaka Laundry</b><br><span class="small">Dashboard Bos - TANPA KUNCI</span></div></div>
+  <div style="display:flex;gap:10px;align-items:center"><div class="logo">🌿</div><div><b>Shaka Laundry</b><br><span class="small">Dashboard Bos</span></div></div>
   <button onclick="loadData()" style="width:auto;background:#1a2e22;color:#fff;padding:10px 14px">🔄</button>
 </div>
 
@@ -56,10 +72,9 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer}
     <div class="kartu g-red"><div class="icon">🛵</div><b id="kKurir">0</b><div class="sub">Kurir Aktif</div><div class="kecil" id="kKurirSub">0 total kurir</div></div>
     <div class="kartu g-teal"><div class="icon">📊</div><b id="kLunas">0</b><div class="sub">Order Lunas</div><div class="kecil">Total order lunas</div></div>
   </div>
-
   <div class="card" style="border-color:#2ecc71">
     <b>⚙️ Pengaturan - Password Kurir (4 Angka)</b>
-    <p class="small">Ganti PIN kurir dari sini. PIN Dashboard untuk sementara gw matiin dulu biar lu bisa masuk.</p>
+    <p class="small">Ganti PIN kurir dari sini.</p>
     <hr style="border-color:#2e4d36">
     <select id="pilihKurirPass"><option value="">-- Pilih Kurir --</option></select>
     <input id="setPinKurir" type="password" inputmode="numeric" maxlength="4" placeholder="PIN Kurir Baru - 4 Angka">
@@ -67,7 +82,6 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer}
     <button class="btn-main" onclick="gantiPinKurir()" style="background:#3b9eff;color:#fff">💾 GANTI PIN KURIR</button>
     <p class="small">Default Yhanuar: 1234</p>
   </div>
-
   <div class="card"><b>🔥 Order Terbaru</b><div id="listTerbaru" style="margin-top:8px">Memuat...</div></div>
 </div>
 
@@ -159,22 +173,14 @@ function warnaAvatar(nama){
   var s=0; for(var i=0;i<nama.length;i++) s+=nama.charCodeAt(i);
   return c[s%c.length];
 }
-function pindahTab(nama,btn){
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
-  document.getElementById('tab-'+nama).classList.add('on');
-  document.querySelectorAll('.nav button').forEach(function(b){ b.classList.remove('on'); });
-  if(btn) btn.classList.add('on');
-  if(nama==='kalender') renderKalender();
-  if(nama==='pelanggan') renderPelanggan();
-}
 async function loadData(){
   try{ var r1=await fetch(FB_URL+'/orders.json'); var d1=await r1.json().catch(function(){ return null; }); orders=[]; if(d1) Object.keys(d1).forEach(function(k){ orders.push({id:k, ...d1[k]}); }); }catch(e){}
   try{ var r2=await fetch(FB_URL+'/settings/kurirs.json'); var d2=await r2.json().catch(function(){ return null; }); kurirs=[]; if(d2) Object.keys(d2).forEach(function(k){ kurirs.push({id:k, ...d2[k]}); }); }catch(e){}
-  renderSemua();
+  try{ renderSemua(); }catch(e){ document.getElementById('listTerbaru').innerHTML='<p class="small">Gagal tampilkan data: '+e.message+'</p>'; }
   setTimeout(loadData, 8000);
 }
 function renderSemua(){
-  var total=orders.reduce(function(a,b){ return a+(b.total||0); },0);
+  var total=orders.reduce(function(a,b){ return a+((b.total||0)*1); },0);
   var kg=orders.reduce(function(a,b){ return a+parseFloat(b.kg||0); },0);
   var uniq={}; orders.forEach(function(o){ uniq[o.nama+'|'+o.wa]=true; });
   var jmlPelanggan=Object.keys(uniq).length;
@@ -198,7 +204,7 @@ function renderSemua(){
   var lt=document.getElementById('listTerbaru');
   if(!orders.length) lt.innerHTML='<p class="small">Belum ada order.</p>';
   else lt.innerHTML=orders.slice().reverse().slice(0,3).map(cardOrder).join('');
-  document.getElementById('detailOmset').innerHTML=orders.slice().reverse().map(function(o){ return '<div style="display:flex;justify-content:space-between;border-bottom:1px solid #2e4d36;padding:8px 0"><span>'+o.nama+' - '+fmtTanggal(tglAntar(o))+'</span><b>Rp '+(o.total||0).toLocaleString('id-ID')+'</b></div>'; }).join('') || '<p class="small">Belum ada</p>';
+  document.getElementById('detailOmset').innerHTML=orders.slice().reverse().map(function(o){ return '<div style="display:flex;justify-content:space-between;border-bottom:1px solid #2e4d36;padding:8px 0"><span>'+(o.nama||'')+' - '+fmtTanggal(tglAntar(o))+'</span><b>Rp '+((o.total||0)*1).toLocaleString('id-ID')+'</b></div>'; }).join('') || '<p class="small">Belum ada</p>';
   var listKurir=kurirs.length?kurirs:[{id:'default',nama:'Yhanuar',pin:'1234'}];
   document.getElementById('listKurir').innerHTML=listKurir.map(function(v){
     return '<div class="kurir-row"><div style="display:flex;gap:10px;align-items:center"><div class="avatar" style="width:38px;height:38px;font-size:15px;background:'+warnaAvatar(v.nama)+'">'+v.nama.charAt(0).toUpperCase()+'</div><div><b>'+v.nama+'</b><br><span class="small">PIN: ••••••</span></div></div><div style="display:flex;gap:6px"><button class="icon-btn edit" onclick="editKurir(\''+v.id+'\',\''+v.nama+'\',\''+v.pin+'\')">✏️</button><button class="icon-btn del" onclick="hapusKurir(\''+v.id+'\')">🗑️</button></div></div>';
@@ -216,7 +222,7 @@ function cardOrder(o){
   var waNum=String(o.wa||'').replace(/^0/,'62').replace(/[^0-9]/g,'');
   var fotoBtn=o.foto?'<button class="icon-btn eye" onclick="toggleFoto(\''+o.id+'\',this)">👁️</button>':'';
   var antar=tglAntar(o);
-  return '<div class="order"><div style="display:flex;justify-content:space-between;gap:8px"><div style="flex:1"><b>'+o.nama+'</b> <span class="small">'+(o.noKuitansi||'')+'</span><br><span class="small">'+o.kg+' kg • '+o.paket+' • <b style="color:#fff">Rp '+(o.total||0).toLocaleString('id-ID')+'</b><br>Alamat: '+(o.alamat||'')+'<br>Masuk: '+(o.tanggal||'')+'<br>📅 <b style="color:#ffcc6b">Antar: '+fmtTanggal(antar)+'</b></span><br>'+badge+' <span class="small">• Kurir: '+(o.kurir||'-')+'</span></div><div style="display:flex;gap:6px;flex-direction:column">'+fotoBtn+'<button class="icon-btn del" onclick="hapusOrder(\''+o.id+'\')">🗑️</button></div></div><div id="foto-'+o.id+'" class="foto-wrap">'+(o.foto?'<img src="'+o.foto+'">':'')+'</div><a href="https://wa.me/'+waNum+'" target="_blank"><button class="wa">💬 Chat WA - '+o.wa+'</button></a></div>';
+  return '<div class="order"><div style="display:flex;justify-content:space-between;gap:8px"><div style="flex:1"><b>'+(o.nama||'')+'</b> <span class="small">'+(o.noKuitansi||'')+'</span><br><span class="small">'+(o.kg||0)+' kg • '+(o.paket||'')+' • <b style="color:#fff">Rp '+((o.total||0)*1).toLocaleString('id-ID')+'</b><br>Alamat: '+(o.alamat||'')+'<br>Masuk: '+(o.tanggal||'')+'<br>📅 <b style="color:#ffcc6b">Antar: '+fmtTanggal(antar)+'</b></span><br>'+badge+' <span class="small">• Kurir: '+(o.kurir||'-')+'</span></div><div style="display:flex;gap:6px;flex-direction:column">'+fotoBtn+'<button class="icon-btn del" onclick="hapusOrder(\''+o.id+'\')">🗑️</button></div></div><div id="foto-'+o.id+'" class="foto-wrap">'+(o.foto?'<img src="'+o.foto+'">':'')+'</div><a href="https://wa.me/'+waNum+'" target="_blank"><button class="wa">💬 Chat WA - '+o.wa+'</button></a></div>';
 }
 function toggleDetailOmset(){ var d=document.getElementById('detailOmset'); d.style.display=d.style.display==='none'?'block':'none'; }
 function setFilterPelanggan(f){ filterPelanggan=f; document.getElementById('fSemua').className=f==='semua'?'on':''; document.getElementById('fAktif').className=f==='aktif'?'on':''; document.getElementById('fBelum').className=f==='belum'?'on':''; renderPelanggan(); }
@@ -237,10 +243,4 @@ function renderPelanggan(){
 }
 function geserBulan(n){ calBulan+=n; if(calBulan>11){ calBulan=0; calTahun++; } if(calBulan<0){ calBulan=11; calTahun--; } tanggalPilih=null; renderKalender(); }
 function renderKalender(){
-  var namaBulan=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  document.getElementById('judulBulan').innerText=namaBulan[calBulan]+' '+calTahun;
-  var pertama=new Date(calTahun,calBulan,1).getDay();
-  var jmlHari=new Date(calTahun,calBulan+1,0).getDate();
-  var hitung={};
-  orders.forEach(function(o){ var k=fmtKey(tglAntar(o)); hitung[k]=(hitung[k]||0)+1; });
-  var html=
+  var namaBulan=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus'
