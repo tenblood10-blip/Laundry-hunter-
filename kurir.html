@@ -1,214 +1,59 @@
 <!DOCTYPE html>
-<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shaka Laundry - Kurir - Xendit Auto</title>
-<meta name="theme-color" content="#0f172a">
-<style>*{box-sizing:border-box;font-family:system-ui}body{background:#0f172a;color:#fff;padding:16px;max-width:520px;margin:auto;padding-bottom:40px}input,select,textarea,button{width:100%;padding:13px;margin:7px 0;border-radius:12px;border:none;font-size:15px}input,select,textarea{background:#1e293b;color:#fff;outline:none}input:disabled{background:#0f172a;color:#94a3b8}button{background:#22c55e;font-weight:bold;color:#fff}.card{background:#1e293b;padding:16px;border-radius:16px;margin:12px 0}.top{display:flex;justify-content:space-between;align-items:center}.dot{width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block}.dot.on{background:#22c55e}.bar{background:#0f172a;height:14px;border-radius:10px;overflow:hidden}.bar>div{background:#22c55e;height:100%}.badge{background:#064e3b;color:#34d399;padding:4px 10px;border-radius:20px;font-size:12px}.struk{background:#fff;color:#000;padding:16px;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.5}.lock{font-size:12px;color:#fbbf24;background:#451a03;padding:6px 10px;border-radius:8px;display:inline-block}.qrBox{background:#fff;color:#000;padding:14px;border-radius:12px;text-align:center}.qrBox img{width:230px;height:230px;max-width:100%}@media print{body *{visibility:hidden}.struk,.struk *{visibility:visible}.struk{position:absolute;left:0;top:0;width:100%}}</style>
-</head><body>
-<div id="debug" style="background:#7f1d1d;padding:10px;border-radius:12px;display:none;font-size:13px"></div>
-<div id="login">
-<h1 style="text-align:center">🧺 Shaka Laundry<br><small style="color:#94a3b8">APP KURIR - QRIS OTOMATIS</small></h1>
-<div class="card">
-<p><b>1. Pilih Nama Kurir Kamu</b></p>
-<select id="pilihKurir"><option value="">⏳ Loading nama kurir...</option></select>
-<p id="kurirInfo" style="color:#fbbf24;font-size:13px">⏳ Menghubungkan...</p>
-<p><b>2. Masukkan PIN Kamu (4 Angka)</b></p>
-<input id="pinKurirInput" type="password" inputmode="numeric" maxlength="4" placeholder="****">
-<button onclick="loginKurir()">Masuk</button>
-<p id="loginErr" style="color:#f87171"></p>
-</div>
-<button onclick="installApp()" style="background:#1e293b">📲 Install App Kurir ke HP</button>
-</div>
-
-<div id="app" style="display:none">
-<div class="top"><b>🧺 Halo, <span id="namaKurirLogin">Kurir</span>!</b><div><span id="btDot" class="dot"></span> <button onclick="toggleBT()" style="width:auto;padding:8px 12px;background:#334155;font-size:12px" id="btBtn">🔵 Printer: OFF</button></div></div>
-<p style="color:#94a3b8;font-size:13px">Puri Cipageran Indah 1 Blok A No 151 | CS 089526193272</p>
-<p><span class="lock">🔒 MODE KURIR: Hanya INPUT. TIDAK BISA EDIT / HAPUS / UBAH HARGA. QRIS OTOMATIS XENDIT.</span></p>
-
-<div class="card"><b>➕ Input Order Baru</b>
-<input id="nama" placeholder="Nama Pelanggan *">
-<input id="hp" placeholder="No HP / WA">
-<textarea id="alamat" placeholder="Alamat / Lokasi Pelanggan *"></textarea>
-<label style="font-size:13px;color:#94a3b8">Produk - 🔒 Dikunci Bos</label>
-<select id="layanan"><option value="">Loading produk dari Bos...</option></select>
-<label style="font-size:13px;color:#94a3b8">📸 Foto Timbangan (Wajib - Auto Kompres)</label>
-<input id="foto" type="file" accept="image/*" capture="environment" onchange="previewFoto(event)">
-<img id="preview" style="width:100%;border-radius:12px;display:none">
-<small id="fotoInfo" style="color:#4ade80"></small>
-<input id="berat" type="number" step="0.001" placeholder="Berat (kg) Contoh: 5.679" oninput="hitung()">
-<div style="background:#0f172a;padding:12px;border-radius:12px">
-<div style="display:flex;justify-content:space-between"><span>Subtotal</span><b id="subtotal">Rp 0</b></div>
-<div style="display:flex;justify-content:space-between"><span>Antar Jemput</span><b>Rp 5.000</b></div>
-<div style="display:flex;justify-content:space-between;font-size:20px;margin-top:8px"><span>TOTAL</span><b id="total" style="color:#4ade80">Rp 0</b></div>
-</div>
-<label style="font-size:13px;color:#94a3b8">Pembayaran</label>
-<select id="bayar"><option value="QRIS">QRIS OTOMATIS (Xendit - Bos Gak Cek Mutasi)</option><option value="MANUAL">MANUAL / Tunai</option></select>
-<div id="qrisInfo" style="background:#064e3b;padding:10px;border-radius:10px;font-size:13px">⚡ <b>QRIS OTOMATIS:</b> Setelah Simpan, QR muncul. Pelanggan scan -> Bayar -> HP kurir otomatis bunyi & berubah jadi ✅ LUNAS. Bos gak perlu cek mutasi.</div>
-<div id="manualBox" style="background:#0f172a;padding:12px;border-radius:12px;text-align:center;display:none">💵 <b>MANUAL / TUNAI</b><br><small>Terima uang tunai, simpan struk</small></div>
-<label style="font-size:13px;color:#94a3b8">Kurir Pengambil - 🔒 Terkunci</label>
-<input id="namaKurirFix" disabled value="">
-<button onclick="simpan()" id="btnSimpan">💾 Simpan & Buatkan QRIS Otomatis</button>
-</div>
-
-<div id="strukArea"></div>
-<div id="qrArea"></div>
-
-<div class="card"><b>🏆 KPI SAYA</b><br><small style="color:#94a3b8">10 Pelanggan = Gaji 50k + Bensin 20k. Setelah itu Bonus 1k/kg.</small>
-<div style="display:flex;justify-content:space-between;margin-top:10px"><b id="kpiText">0 / 10</b><span id="kpiBadge" class="badge">Belum Tercapai</span></div>
-<div class="bar" style="margin:10px 0"><div id="kpiBar" style="width:0%"></div></div>
-<div id="kpiHadiah" style="background:#064e3b;padding:12px;border-radius:12px;display:none">🎉 TERCAPAI! Klaim ke Bos: Gaji 50k + Bensin 20k</div>
-<b>💰 Bonus Saya: <span id="totalBonus" style="color:#4ade80">Rp 0</span></b> | Total Kg: <span id="totalKg">0</span> kg</div>
-<div class="card"><b>📋 Order Saya (Lihat Saja)</b><div id="listOrder">Belum ada order</div></div>
-<button onclick="logoutKurir()" style="background:#334155">🚪 Logout / Ganti Kurir</button>
-</div>
-
-<div id="qrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;flex-direction:column;padding:20px" onclick="tutupQR()">
-<div style="background:#fff;color:#000;padding:20px;border-radius:16px;text-align:center;max-width:90%" onclick="event.stopPropagation()">
-<b style="font-size:20px">SHAKA LAUNDRY</b><br><small>Scan untuk Bayar - QRIS Otomatis</small><br>
-<img id="qrImgBig" src="" style="width:300px;height:300px;max-width:100%;margin:10px 0"><br>
-<b id="qrTotalBig" style="font-size:22px;color:#16a34a">Total: Rp 0</b><br>
-<small>Nama: <span id="qrNama"></span></small><br>
-<div id="statusBayarModal" style="background:#fef3c7;color:#92400e;padding:10px;border-radius:10px;margin-top:10px">⏳ Menunggu Pembayaran...</div><br>
-<button onclick="tutupQR()" style="background:#ef4444">✖️ Tutup</button>
-</div>
-</div>
-
-<script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getFirestore,collection,addDoc,onSnapshot,doc,getDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
-function showErr(m){let d=document.getElementById('debug');d.style.display='block';d.innerText="ERROR: "+m;}
-window.addEventListener('error',e=>{showErr(e.message||"Script error");});
-const firebaseConfig={apiKey:"AIzaSyAihBZqdi4Cn5LbYagXDrffa4a6ysgVJn4",authDomain:"shaka-laundry.firebaseapp.com",projectId:"shaka-laundry",storageBucket:"shaka-laundry.firebasestorage.app",messagingSenderId:"228092735547",appId:"1:228092735547:web:6fa73a5c43dc654cfd2c1e",measurementId:"G-NNRWFP11RB"};
-let db,functions;try{const app=initializeApp(firebaseConfig);db=getFirestore(app);functions=getFunctions(app);}catch(e){showErr(e.message);}
-let orders=[],produk=[],kurirList=[],kurirLogin=null,fotoBase64="",deferredPrompt=null,totalSekarang=0,cekInterval=null,currentOrderId=null;
-function getEl(id){return document.getElementById(id);}
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
-window.installApp=()=>{if(deferredPrompt)deferredPrompt.prompt();else alert("Klik titik 3 > Add to Home Screen");};
-window.toggleBT=async()=>{try{const d=await navigator.bluetooth.requestDevice({acceptAllDevices:true});getEl('btDot').classList.add('on');getEl('btBtn').innerText="🟢 Tersambung: "+(d.name||"Printer");}catch(e){alert("Bluetooth dibatalkan");}};
-window.previewFoto=(e)=>{
-  let f=e.target.files[0];if(!f)return;getEl('fotoInfo').innerText="⏳ Mengompres foto...";
-  let reader=new FileReader();reader.onload=ev=>{
-    let img=new Image();img.onload=()=>{
-      let canvas=document.createElement('canvas');let scale=Math.min(1,800/img.width);
-      canvas.width=img.width*scale;canvas.height=img.height*scale;
-      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-      fotoBase64=canvas.toDataURL('image/jpeg',0.6);
-      let preview=getEl('preview');preview.src=fotoBase64;preview.style.display='block';
-      getEl('fotoInfo').innerText="✅ Foto terkompres - Aman disimpan!";
-    };img.src=ev.target.result;
-  };reader.readAsDataURL(f);
-};
-window.perbesarQR=()=>{getEl('qrModal').style.display='flex';};
-window.tutupQR=()=>{getEl('qrModal').style.display='none';};
-window.hitung=()=>{
-  try{
-    let b=parseFloat(getEl('berat').value)||0;let val=getEl('layanan').value||"";let h=val.includes("|")?parseInt(val.split("|")[1]||0):0;
-    let sub=b*h,tot=sub+5000;totalSekarang=tot;
-    getEl('subtotal').innerText="Rp "+sub.toLocaleString('id-ID');getEl('total').innerText="Rp "+tot.toLocaleString('id-ID');return {sub,tot};
-  }catch(e){return {sub:0,tot:5000};}
-};
-window.logoutKurir=()=>{try{sessionStorage.removeItem('shaka_kurir');}catch(e){}if(cekInterval)clearInterval(cekInterval);location.reload();};
-function bukaApp(k){kurirLogin=k;getEl('login').style.display='none';getEl('app').style.display='block';getEl('namaKurirLogin').innerText=k.nama||"Kurir";getEl('namaKurirFix').value=(k.nama||"Kurir")+" (Terkunci)";try{renderKurir();}catch(e){showErr(e.message);}}
-window.loginKurir=()=>{
-  try{
-    let id=getEl('pilihKurir').value;let pinVal=getEl('pinKurirInput').value;
-    if(!id){getEl('loginErr').innerText="⚠️ Pilih nama dulu!";return;}
-    let k=kurirList.find(x=>x.id===id);if(!k){getEl('loginErr').innerText="Kurir tidak ditemukan.";return;}
-    if(String(k.pin)!==pinVal){getEl('loginErr').innerText="PIN Salah untuk "+k.nama+"!";return;}
-    try{sessionStorage.setItem('shaka_kurir',JSON.stringify(k));}catch(e){}bukaApp(k);
-  }catch(e){showErr("Login gagal: "+e.message);}
-};
-// FUNGSI UTAMA: SIMPAN + BIKIN QRIS OTOMATIS + AUTO CEK LUNAS
-window.simpan=async()=>{
-  if(cekInterval)clearInterval(cekInterval);
-  let n=getEl('nama').value,h=getEl('hp').value,a=getEl('alamat').value,b=parseFloat(getEl('berat').value),bayarVal=getEl('bayar').value;
-  if(!n||!a||!b||!getEl('layanan').value) return alert("Isi Nama, Alamat, Produk & Berat!");
-  if(!fotoBase64) return alert("Foto timbangan wajib!");
-  let layananNama=getEl('layanan').value.split("|")[0],harga=parseInt(getEl('layanan').value.split("|")[1]);
-  let {sub,tot}=hitung();
-  let tgl=new Date();let tglKirim=new Date(tgl);tglKirim.setDate(tglKirim.getDate()+2);
-  let noKuit="SHAKA-"+tgl.getFullYear()+String(tgl.getMonth()+1).padStart(2,'0')+String(tgl.getDate()).padStart(2,'0')+"-"+String(orders.length+1).padStart(3,'0');
-  let data={nama:n,hp:h,alamat:a,layanan:layananNama+" - Rp "+harga.toLocaleString('id-ID')+"/kg",layananNama:layananNama,berat:b,fotoTimbangan:fotoBase64,subtotal:sub,biayaAntar:5000,totalBayar:tot,metodePembayaran:bayarVal,noKuitansi:noKuit,namaKurir:kurirLogin.nama,waktu:tgl.toLocaleString('id-ID'),tanggalInput:tgl.toLocaleDateString('id-ID'),tanggalKirim:tglKirim.toLocaleDateString('id-ID'),status:"Baru",kurir:kurirLogin.nama,locked:true,statusBayar:bayarVal==="QRIS"?"MENUNGGU PEMBAYARAN":"LUNAS - TUNAI",verifikasiBos:bayarVal!=="QRIS"};
-  let docRef;try{docRef=await addDoc(collection(db,"orders"),data);}catch(e){return alert("Gagal simpan: "+e.message);}
-  currentOrderId=docRef.id;
-  // STRUK SELALU MUNCUL
-  getEl('strukArea').innerHTML=`<div class="struk"><center><b>SHAKA LAUNDRY</b><br>Puri Cipageran Indah 1 Blok A No 151<br>CS: 089526193272<br>------------------------------</center>No Kuitansi: ${noKuit}<br>Pelanggan: ${n}<br>HP: ${h}<br>Alamat: ${a}<br>Kurir: ${kurirLogin.nama}<br>Tgl Masuk: ${data.waktu}<br>Tgl Kirim: ${data.tanggalKirim}<br>------------------------------<br>Layanan: ${layananNama}<br>Berat: ${b} kg<br>Subtotal: Rp ${sub.toLocaleString('id-ID')}<br>Antar Jemput: Rp 5.000<br><b>TOTAL: Rp ${tot.toLocaleString('id-ID')}</b><br>Pembayaran: ${bayarVal}<br>Status Bayar: ${data.statusBayar}<br>------------------------------<center>Terima Kasih 🙏</center></div><button onclick="window.print()" style="background:#7c3aed">🖨️ Print Struk</button>`;
-  // KALAU TUNAI, SELESAI
-  if(bayarVal!=="QRIS"){
-    getEl('qrArea').innerHTML=`<div class="card" style="background:#064e3b;text-align:center">✅ <b>TUNAI - LUNAS</b><br>Terima uang tunai Rp ${tot.toLocaleString('id-ID')} dari pelanggan</div>`;
-    getEl('nama').value="";getEl('hp').value="";getEl('alamat').value="";getEl('berat').value="";fotoBase64="";getEl('preview').style.display='none';getEl('fotoInfo').innerText="";hitung();
-    return alert("Tersimpan! TUNAI LUNAS - Kuitansi: "+noKuit);
-  }
-  // KALAU QRIS: BIKIN QRIS DINAMIS OTOMATIS VIA XENDIT
-  getEl('qrArea').innerHTML=`<div class="card" style="text-align:center">⏳ Membuat QRIS Otomatis Xendit...<br><small>Mohon tunggu 3 detik, jangan tutup halaman</small></div>`;
-  try{
-    const buatQR = httpsCallable(functions,'buatQRIS');
-    const result = await buatQR({orderId: currentOrderId, total: tot, nama: n});
-    let qrString = result.data.qrUrl;
-    let qrImgUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(qrString);
-    let qrImgBig = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(qrString);
-    getEl('qrImgBig').src=qrImgBig;getEl('qrTotalBig').innerText="Total: Rp "+tot.toLocaleString('id-ID');getEl('qrNama').innerText=n;getEl('statusBayarModal').innerHTML="⏳ Menunggu Pembayaran...";
-    getEl('qrArea').innerHTML=`<div class="qrBox"><b style="font-size:18px">SHAKA LAUNDRY</b><br><small>QRIS Otomatis - Scan untuk Bayar</small><br><img src="${qrImgUrl}" onclick="perbesarQR()" style="cursor:pointer"><br><b style="font-size:20px;color:#16a34a">Total: Rp ${tot.toLocaleString('id-ID')}</b><br><small>Pelanggan: ${n} | Kuitansi: ${noKuit}</small><br><div id="statusOtomatis" style="background:#fef3c7;color:#92400e;padding:12px;border-radius:10px;margin-top:10px">⏳ <b>MENUNGGU PEMBAYARAN...</b><br><small>App ngecek otomatis tiap 5 detik.<br>Bos GAK PERLU cek mutasi lagi!</small></div><button onclick="perbesarQR()" style="background:#0f172a;margin-top:10px">🔍 Perbesar QR</button></div>`;
-    // AUTO CEK TIAP 5 DETIK - INI AUTOMATION-NYA!
-    cekInterval=setInterval(async()=>{
-      try{
-        let snap=await getDoc(doc(db,"orders",currentOrderId));
-        if(!snap.exists())return;
-        let o=snap.data();
-        if(o.verifikasiBos===true && o.statusBayar && o.statusBayar.includes("LUNAS")){
-          clearInterval(cekInterval);
-          let el=getEl('statusOtomatis');if(el){el.innerHTML=`✅ <b style="color:#16a34a;font-size:18px">PEMBAYARAN BERHASIL! UANG UDAH MASUK ✅</b><br><small>Waktu Lunas: ${o.waktuLunas||""}<br>Cucian boleh diproses! Bos otomatis tau.</small>`;el.style.background="#dcfce7";}
-          let el2=getEl('statusBayarModal');if(el2){el2.innerHTML="✅ PEMBAYARAN BERHASIL!";el2.style.background="#dcfce7";el2.style.color="#16a34a";}
-          try{new Audio('https://www.soundjay.com/buttons/sounds/button-09a.mp3').play();}catch(e){}
-          alert("✅ PEMBAYARAN BERHASIL! Uang udah masuk Rp "+tot.toLocaleString('id-ID')+". Bos otomatis tau, gak perlu cek mutasi!");
-        }
-      }catch(e){}
-    },5000);
-  }catch(e){
-    // FALLBACK: Kalau Xendit / Function belum aktif, pakai QR manual biar gak macet
-    getEl('qrArea').innerHTML=`<div class="card" style="background:#7f1d1d">⚠️ QRIS Otomatis belum aktif: ${e.message}<br><small>Cek: 1. Function sudah di-deploy? 2. Secret Key Xendit sudah diisi? 3. Pakai QR manual sementara di bawah.</small><br><br><div class="qrBox"><b>SHAKA LAUNDRY (MANUAL)</b><br><img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent("SHAKA LAUNDRY | "+n+" | Total Rp "+tot)}"><br><b>Total: Rp ${tot.toLocaleString('id-ID')}</b><br><small>Minta pelanggan tunjukkan bukti transfer, foto bukti ke Bos.</small></div></div>`;
-  }
-  getEl('nama').value="";getEl('hp').value="";getEl('alamat').value="";getEl('berat').value="";fotoBase64="";getEl('preview').style.display='none';getEl('fotoInfo').innerText="";hitung();
-  alert("Order tersimpan! Kuitansi: "+noKuit+" - Sekarang tunjukkan QR ke pelanggan.");
-};
-function renderKurir(){
-  if(!kurirLogin) return;
-  let myOrders=orders.filter(o=>(o.namaKurir||o.kurir)===kurirLogin.nama);
-  let totalCust=new Set(myOrders.map(o=>o.nama)).size;
-  let totalKg=myOrders.reduce((a,o)=>a+Number(o.berat||0),0);
-  let bonus=totalCust>=10?totalKg*1000:0;
-  getEl('kpiText').innerText=totalCust+" / 10 Pelanggan";getEl('kpiBar').style.width=Math.min(100,totalCust*10)+"%";
-  getEl('kpiBadge').innerText=totalCust>=10?"TERCAPAI 🎉":"Belum Tercapai";
-  getEl('kpiHadiah').style.display=totalCust>=10?"block":"none";
-  getEl('totalBonus').innerText="Rp "+Math.round(bonus).toLocaleString('id-ID');getEl('totalKg').innerText=totalKg.toFixed(3);
-  getEl('listOrder').innerHTML=myOrders.map(o=>{
-    let statusWarna=(o.statusBayar||"").includes("LUNAS")?"#4ade80":"#fbbf24";
-    return `<div style="background:#0f172a;padding:12px;border-radius:12px;margin:8px 0"><b>${o.nama||"-"}</b> - ${o.berat||0} kg <span style="color:#fbbf24;font-size:11px">🔒 Terkunci</span><br><small>${o.alamat||""} | ${o.noKuitansi||""}<br>Total: Rp ${Number(o.totalBayar||0).toLocaleString('id-ID')} | Kirim: ${o.tanggalKirim||"-"} | ${o.metodePembayaran||""}<br>💳 Status: <b style="color:${statusWarna}">${o.statusBayar||"Belum ada status"}</b></small></div>`;
-  }).join('')||"Belum ada order kamu";
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kurir - Shaka Laundry</title>
+<style>
+*{box-sizing:border-box;font-family:sans-serif}
+body{margin:0;background:#111;padding:16px;color:#fff}
+.card{background:#fff;color:#111;border-radius:16px;padding:16px;margin-bottom:12px}
+.bank{border-radius:12px;padding:14px;text-align:center;margin:10px 0;color:#fff}
+.bank b{font-size:26px;letter-spacing:1px}
+button{width:100%;padding:13px;border:0;border-radius:10px;font-weight:700;margin-top:8px;cursor:pointer}
+.btn-lunas{background:#28a745;color:#fff} .btn-hapus{background:#eee}
+img{width:100%;border-radius:10px;margin-top:8px}
+.badge{padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;color:#fff}
+</style>
+</head>
+<body>
+<h2>🛵 Dashboard Kurir</h2>
+<p style="opacity:.7">Shaka Laundry - Order Masuk</p>
+<div id="list"></div>
+<script>
+function load(){
+  let list=JSON.parse(localStorage.getItem('shaka_orders')||'[]');
+  let el=document.getElementById('list');
+  if(!list.length){el.innerHTML='<div class=card>Belum ada orderan.</div>';return;}
+  el.innerHTML=list.map((o,i)=>{
+    let isTransfer = o.metodeBayar==='TRANSFER SEABANK';
+    return `
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <b>${o.nama}</b>
+      <span class="badge" style="background:${isTransfer?'#007bff':'#f59e0b'}">${isTransfer?'🏦 TRANSFER SEABANK':'💵 MANUAL / CASH'}</span>
+    </div>
+    <small>${o.tanggal}<br>${o.alamat}<br>WA: ${o.wa} | ${o.kg} kg | ${o.paket}</small>
+    <h3>Total Tagih: Rp ${o.total.toLocaleString('id-ID')}</h3>
+    <div class="bank" style="background:${isTransfer?'#111':'#f59e0b'}">
+      ${isTransfer
+        ? 'Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b>901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>'
+        : '💵 TAGIH CASH KE PELANGGAN<br><b>Rp '+o.total.toLocaleString('id-ID')+'</b><br><small>Minta uang tunai, foto uang / kuitansi</small>'}
+    </div>
+    <p>${isTransfer ? '1. Minta pelanggan transfer ke SeaBank di atas<br>2. Minta liat bukti "Berhasil"<br>3. Foto bukti itu di sini:' : '1. Tagih cash ke pelanggan<br>2. Terima uang tunai<br>3. Foto uang / bukti di sini:'}</p>
+    <input type="file" accept="image/*" capture="environment" onchange="preview(event,${i})" style="width:100%">
+    <img src="${o.bukti||''}" style="display:${o.bukti?'block':'none'}">
+    <button class="btn-lunas" onclick="lunas(${i})">✅ BUKTI UDAH DIFOTO, GAS JEMPUT</button>
+    <button class="btn-hapus" onclick="hapus(${i})">Hapus Order</button>
+    <div style="margin-top:8px;font-weight:700;color:${o.status.includes('LUNAS')?'green':'orange'}">Status: ${o.status} | Bayar via: ${o.metodeBayar}</div>
+  </div>`}).join('');
 }
-if(db){
-  onSnapshot(collection(db,"couriers"),(s)=>{
-    kurirList=[];s.forEach(d=>{let o=d.data();o.id=d.id;kurirList.push(o);});
-    getEl('kurirInfo').innerText="🟢 Tersambung - "+kurirList.length+" kurir ke-load";getEl('kurirInfo').style.color="#4ade80";
-    if(kurirList.length===0){getEl('pilihKurir').innerHTML=`<option value="">-- Belum ada kurir --</option>`;}
-    else{
-      getEl('pilihKurir').innerHTML=`<option value="">-- Pilih Nama Kurir --</option>`+kurirList.map(k=>`<option value="${k.id}">${k.nama||k.hp||k.id}</option>`).join('');
-      try{let saved=sessionStorage.getItem('shaka_kurir');if(saved){let sk=JSON.parse(saved);let found=kurirList.find(x=>x.id===sk.id);if(found){getEl('pilihKurir').value=found.id;bukaApp(found);}}}catch(e){}
-    }
-  },(e)=>{showErr("Couriers: "+e.message);});
-  onSnapshot(collection(db,"products"),(s)=>{
-    produk=[];s.forEach(d=>{let o=d.data();o.id=d.id;produk.push(o);});
-    if(produk.length===0) produk=[{nama:"Cuci Kering",harga:7000},{nama:"Cuci Setrika",harga:10000},{nama:"Setrika Saja",harga:5000}];
-    getEl('layanan').innerHTML=produk.map(p=>`<option value="${p.nama}|${p.harga}">${p.nama} - Rp ${Number(p.harga).toLocaleString('id-ID')}/kg</option>`).join('');hitung();
-  });
-  onSnapshot(collection(db,"orders"),(s)=>{
-    orders=[];s.forEach(d=>{let o=d.data();o.id=d.id;orders.push(o);});
-    orders.sort((a,b)=>String(b.waktu||"").localeCompare(String(a.waktu||"")));
-    try{renderKurir();}catch(e){}
-  });
+function preview(e,i){
+  let r=new FileReader(); r.onload=()=>{let list=JSON.parse(localStorage.getItem('shaka_orders')||'[]'); list[i].bukti=r.result; localStorage.setItem('shaka_orders',JSON.stringify(list)); load();}; r.readAsDataURL(e.target.files[0]);
 }
-getEl('layanan').addEventListener('change',hitung);
-getEl('bayar').addEventListener('change',e=>{
-  let isQRIS=e.target.value==="QRIS";
-  getEl('qrisInfo').style.display=isQRIS?"block":"none";
-  g
+function lunas(i){let list=JSON.parse(localStorage.getItem('shaka_orders')||'[]'); if(!list[i].bukti) return alert('Foto dulu bukti bayarnya!'); list[i].status='LUNAS - Baju Dijemput'; localStorage.setItem('shaka_orders',JSON.stringify(list)); load(); alert('Mantap! Order LUNAS.');}
+function hapus(i){if(!confirm('Hapus order ini?'))return; let list=JSON.parse(localStorage.getItem('shaka_orders')||'[]'); list.splice(i,1); localStorage.setItem('shaka_orders',JSON.stringify(list)); load();}
+load();
+</script>
+</body>
+</html>
