@@ -17,7 +17,7 @@ button{width:100%;padding:14px;border:0;border-radius:12px;font-weight:700;font-
 .dot{width:12px;height:12px;border-radius:50%;background:#555;display:inline-block} .dot.on{background:#2ecc71;box-shadow:0 0 8px #2ecc71}
 .bar{height:12px;background:#12241a;border-radius:20px;overflow:hidden;border:1px solid #2e4d36} .bar div{height:100%;background:linear-gradient(90deg,#27ae60,#2ecc71)}
 .bayar{display:flex;gap:8px} .bayar label{flex:1;text-align:center;border:2px solid #3a5a44;padding:12px;border-radius:12px;cursor:pointer;background:#12241a;color:#ddd} .bayar input{display:none} .bayar label.active{border-color:#2ecc71;background:#1e3d2b;color:#fff}
-.bank{border-radius:12px;padding:14px;text-align:center;margin:10px 0;color:#fff}
+.bank{border-radius:10px;padding:10px;text-align:center;margin:8px 0;color:#fff;font-size:13px}
 img{width:100%;border-radius:12px;margin-top:8px}
 .small{font-size:12px;color:#a3c2a8}
 h2,h3{color:#fff}
@@ -26,6 +26,14 @@ h2,h3{color:#fff}
 .kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px} .kpi .card{margin:0;text-align:center}
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:#2ecc71;color:#06281a;padding:16px 20px;border-radius:14px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:999;transition:.4s;text-align:center;width:90%;max-width:360px}
 #toast.show{transform:translateX(-50%) translateY(0)}
+.order{border-bottom:1px solid #2e4d36;padding:12px 0}
+.order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.icon-btn{width:36px;height:36px;min-width:36px;padding:0;border-radius:10px;font-size:18px;display:inline-flex;align-items:center;justify-content:center}
+.eye{background:#2e4d36;color:#9aa8a0} .eye.on{background:#2ecc71;color:#06281a}
+.print-mini{background:#06281a;color:#2ecc71;border:1px solid #2ecc71}
+.foto-wrap{display:none;margin-top:8px} .foto-wrap.show{display:block}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-lunas{background:#14532d;color:#2ecc71} .badge-tf{background:#06281a;color:#2ecc71;border:1px solid #2ecc71}
 </style>
 </head>
 <body>
@@ -47,7 +55,8 @@ h2,h3{color:#fff}
   <div><b>🛵🌿 Shaka Laundry</b><br><small id="hiKurir" style="color:#a3c2a8">Kurir: -</small></div>
   <div style="text-align:right">
     <button onclick="toggleBT()" style="width:auto;padding:8px 12px;background:#2ecc71;color:#06281a;border-radius:10px;font-weight:700">📶 Bluetooth</button><br>
-    <span class="dot" id="dotBT"></span> <small id="txtBT" style="color:#a3c2a8">Belum Tersambung</small>
+    <span class="dot" id="dotBT"></span> <small id="txtBT" style="color:#a3c2a8">Belum Tersambung</small><br>
+    <button onclick="logout()" style="width:auto;padding:4px 10px;background:transparent;color:#a3c2a8;font-size:11px;margin-top:4px">Keluar ↩</button>
   </div>
 </div>
 
@@ -79,7 +88,7 @@ h2,h3{color:#fff}
     <label id="lbManual" onclick="pilihBayar('CASH - LUNAS')"><input type="radio" name="bayar" value="CASH - LUNAS">💵 CASH - LUNAS</label>
   </div>
   <div id="infoBayar" class="bank" style="background:#06281a;border:1px solid #2ecc71">
-    Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>
+    Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:18px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>
   </div>
   <div style="background:#06281a;color:#fff;padding:12px;border-radius:12px;text-align:center;margin-top:10px;border:1px solid #2ecc71">No. Kuitansi: <b id="noKuitansi" style="color:#2ecc71">SHAKA-...</b></div>
   <button class="btn-blue" onclick="simpan()" style="margin-top:10px">💾 SIMPAN ORDER & PRINT STRUK BLUETOOTH</button>
@@ -106,16 +115,24 @@ h2,h3{color:#fff}
 
 <script>
 var daftarKurir = [{nama:'Yhanuar', pin:'1234'}];
-var kurirSaya = '';
+var kurirSaya = localStorage.getItem('shaka_kurir') || '';
+// AUTO LOGIN KALO UDAH PERNAH LOGIN - BIAR REFRESH GAK JADI 0 LAGI
+window.addEventListener('DOMContentLoaded', function(){
+  if(kurirSaya){
+    document.getElementById('namaKurirLogin').value = kurirSaya;
+    masuk(kurirSaya);
+  }
+});
 function login(){
   var pin = document.getElementById('pin').value.trim();
   var nama = document.getElementById('namaKurirLogin').value;
   if(!pin){ alert('Isi PIN dulu!'); return; }
-  if(nama==='Yhanuar' && pin==='1234'){ masuk(nama); return; }
+  if(nama==='Yhanuar' && pin==='1234'){ localStorage.setItem('shaka_kurir', nama); masuk(nama); return; }
   var ketemu = null;
   for(var i=0;i<daftarKurir.length;i++){ if(daftarKurir[i].nama===nama) ketemu=daftarKurir[i]; }
   var pinBenar = ketemu ? String(ketemu.pin) : '1234';
   if(pin !== pinBenar){ alert('PIN salah untuk '+nama+'!'); return; }
+  localStorage.setItem('shaka_kurir', nama);
   masuk(nama);
 }
 function masuk(nama){
@@ -123,9 +140,15 @@ function masuk(nama){
   document.getElementById('login').style.display='none';
   document.getElementById('hiKurir').innerText='Kurir: '+nama;
   document.getElementById('kurir').value=nama;
+  if(window.renderOrders) window.renderOrders();
+}
+function logout(){
+  if(confirm('Keluar dari akun '+kurirSaya+'?')){
+    localStorage.removeItem('shaka_kurir');
+    location.reload();
+  }
 }
 function gps(){ navigator.geolocation.getCurrentPosition(function(p){ document.getElementById('alamat').value += ' | Lokasi: https://maps.google.com/?q='+p.coords.latitude+','+p.coords.longitude; },function(){alert('GPS ditolak')}); }
-// SUARA SUKSES + TOAST PROFESIONAL
 function suksesSound(){
   try{
     var ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -146,6 +169,14 @@ function showToast(noKuitansi, total){
   document.getElementById('toastSub').innerHTML = noKuitansi + ' | Total Rp ' + total.toLocaleString('id-ID') + '<br>Sudah terkirim ke Dashboard Bos';
   t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+// TOGGLE FOTO - MATA ABU2 KLIK BARU MUNCUL
+function toggleFoto(id, btn){
+  var el=document.getElementById('foto-'+id);
+  if(!el) return;
+  var isShow = el.classList.toggle('show');
+  btn.classList.toggle('on', isShow);
+  btn.innerText = isShow ? '🙈' : '👁️';
 }
 </script>
 
@@ -171,7 +202,9 @@ onValue(ref(db,'settings/kurirs'), (snap)=>{
     if(arr.length>0){ daftarKurir=arr; }
   }
   let sel=document.getElementById('namaKurirLogin');
+  let valSekarang = kurirSaya || sel.value;
   sel.innerHTML = daftarKurir.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('');
+  if(valSekarang) sel.value = valSekarang;
   let isDefault = daftarKurir.length===1 && daftarKurir[0].nama==='Yhanuar';
   document.getElementById('infoDefault').innerHTML = isDefault ? 'Default: Yhanuar / PIN 1234<br>Nanti Bos bisa ganti dari Dashboard' : 'Kurir diatur dari Dashboard Bos';
 });
@@ -181,8 +214,8 @@ window.pilihBayar = (v)=>{
   document.getElementById('lbTF').className=v==='TRANSFER SEABANK'?'active':'';
   document.getElementById('lbManual').className=v==='CASH - LUNAS'?'active':'';
   let info=document.getElementById('infoBayar');
-  if(v==='TRANSFER SEABANK'){ info.style.background='#06281a'; info.innerHTML='Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:22px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>'; }
-  else{ info.style.background='#14532d'; info.innerHTML='✅ PEMBAYARAN TUNAI - LUNAS<br><b style="font-size:22px" id="cashTotal">Rp 0</b><br><small>Pembayaran diterima di tempat, sudah lunas</small>'; hitung(); }
+  if(v==='TRANSFER SEABANK'){ info.style.background='#06281a'; info.innerHTML='Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b style="font-size:18px;color:#2ecc71">901195106698</b><br>a.n YHANUAR TRIWIBOWO<br><small>Pelanggan bisa bayar via DANA / OVO / GoPay / m-banking</small>'; }
+  else{ info.style.background='#14532d'; info.innerHTML='✅ PEMBAYARAN TUNAI - LUNAS<br><b style="font-size:20px" id="cashTotal">Rp 0</b><br><small>Pembayaran diterima di tempat, sudah lunas</small>'; hitung(); }
 }
 function buatKuitansi(){ let d=new Date(); let tgl=d.getFullYear()+''+String(d.getMonth()+1).padStart(2,'0')+''+String(d.getDate()).padStart(2,'0'); return 'SHAKA-'+tgl+'-'+String(orders.length+1).padStart(4,'0'); }
 window.hitung = ()=>{
@@ -225,10 +258,12 @@ window.printStruk = async (o)=>{
   }
   alert('🖨️ MENGIRIM KE PRINTER BLUETOOTH:\n'+ (bluetoothDevice? bluetoothDevice.name : '') +'\n\n'+struk);
 }
-onValue(ref(db,'orders'), (snap)=>{
-  orders=[]; snap.forEach(c=>{ orders.push({id:c.key, ...c.val()}) });
+// RENDER SIMPLE + PROFESIONAL
+window.renderOrders = ()=>{
   document.getElementById('noKuitansi').innerText=buatKuitansi();
-  let myOrders=orders.filter(o=>o.kurir===kurirSaya);
+  // Achievement hitung dari kurir yg login, bukan dari yg kosong
+  let namaAktif = kurirSaya || localStorage.getItem('shaka_kurir') || '';
+  let myOrders = namaAktif ? orders.filter(o=>o.kurir===namaAktif) : [];
   let jml=myOrders.length;
   let jmlBonusKg=0, bonus=0;
   if(jml>10){ let sisa=myOrders.slice(10); jmlBonusKg=sisa.reduce((a,b)=>a+parseFloat(b.kg||0),0); bonus=Math.round(jmlBonusKg*1000); }
@@ -241,11 +276,25 @@ onValue(ref(db,'orders'), (snap)=>{
   if(!orders.length) list.innerHTML='Belum ada order.';
   else list.innerHTML=orders.slice().reverse().map(o=>{
     let isTF = o.metodeBayar==='TRANSFER SEABANK';
-    return `<div style="border-bottom:1px solid #2e4d36;padding:10px 0"><b>${o.nama}</b> - ${o.noKuitansi}<br><small style="color:#a3c2a8">${o.kg} kg | ${o.paket} | Total Rp ${o.total.toLocaleString('id-ID')} | ${o.metodeBayar} | Kurir: ${o.kurir} | Status: ${o.status || 'LUNAS'}</small><br>
-    <div class="bank" style="background:${isTF?'#06281a':'#14532d'};border:1px solid #2ecc71">${isTF?'Transfer ke:<br>PT. BANK SEABANK INDONESIA<br><b>901195106698</b><br>a.n YHANUAR TRIWIBOWO':'✅ CASH - LUNAS<br><b>Rp '+o.total.toLocaleString('id-ID')+'</b><br><small>Pembayaran diterima di tempat</small>'}</div>
-    ${o.foto?`<img src="${o.foto}">`:''}<button class="btn-dark" onclick="printLagi('${o.id}')">🖨️ PRINT ULANG STRUK (BLUETOOTH)</button></div>`}).join('');
+    let badge = isTF ? `<span class="badge badge-tf">🏦 TF SEABANK</span>` : `<span class="badge badge-lunas">✅ CASH - LUNAS</span>`;
+    let fotoBtn = o.foto ? `<button class="icon-btn eye" onclick="toggleFoto('${o.id}', this)" title="Lihat Foto Timbangan">👁️</button>` : '';
+    return `<div class="order">
+      <div class="order-head">
+        <div style="flex:1">
+          <b>${o.nama}</b> <span style="color:#a3c2a8;font-size:12px">${o.noKuitansi}</span><br>
+          <span class="small">${o.kg} kg • ${o.paket} • <b style="color:#fff">Rp ${o.total.toLocaleString('id-ID')}</b></span><br>
+          ${badge} <span class="small">• ${o.kurir}</span>
+        </div>
+        <div style="display:flex;gap:6px">${fotoBtn}<button class="icon-btn print-mini" onclick="printLagi('${o.id}')" title="Print Struk">🖨️</button></div>
+      </div>
+      <div id="foto-${o.id}" class="foto-wrap">${o.foto?`<img src="${o.foto}" style="margin:0">`:''}</div>
+    </div>`}).join('');
+};
+onValue(ref(db,'orders'), (snap)=>{
+  orders=[]; snap.forEach(c=>{ orders.push({id:c.key, ...c.val()}) });
+  renderOrders();
 });
 window.printLagi = (id)=>{ let o=orders.find(x=>x.id===id); if(o) printStruk(o); }
 </script>
 </body>
-  </html>
+      </html>
